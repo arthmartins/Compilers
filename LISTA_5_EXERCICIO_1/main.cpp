@@ -27,4 +27,6 @@ int main(){
         entrada += c;
     }
 
+        std::cout << entrada;
+
 }
