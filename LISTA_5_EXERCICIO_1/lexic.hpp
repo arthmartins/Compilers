@@ -5,7 +5,11 @@
 
 
 class Compilador{
-    public: int transitions[states][alphabet] ={
+
+    public: 
+    char alfabeto_automato[alphabet] = { '+','-','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9'};
+
+    int transitions[states][alphabet] ={
     /*       +,-,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,  0,1,2,3,4,5,6,7,8,9 */
     /* 0 */ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0},
     /* 1 */ {3,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,  5,5,5,5,5,5,5,5,5,5},
@@ -21,5 +25,7 @@ class Compilador{
 
     public: void analyserLexic(std::string entrada);
 
+    bool inside_alphabet(char caractere);
 
+    int next_state(int current_state, char caractere);
 };

@@ -12,6 +12,6 @@ int main(){
         entrada += c;
     }
 
-    Compilador Aito;
-    Aito.analyserLexic(entrada);
+    Compilador Automato;
+    Automato.analyserLexic(entrada);
 }

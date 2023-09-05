@@ -69,5 +69,4 @@ void Compilador:: analyserLexic(std::string entrada){
       
     }
     
-    
 }
