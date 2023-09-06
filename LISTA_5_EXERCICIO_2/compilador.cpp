@@ -6,42 +6,48 @@ void Compilador:: analyserLexic(std::string entrada){
     int last_final = 0;
     int current_state = 1;
     int start = 0;
-    int token = 0;
+    int ponto_de_token = 0;
     int count = 0;
     int flag =0;
 
     while(true){
     
-    if(entrada.length() == count)
-    {
-        flag =1;
-    }
-
     if(current_state==0)
     {
-        for(int i = start; i < token;i++){
-                std::cout << entrada[i];
-        }
-        
-        std::cout << getToken(last_final);
-    
-        printf("\n");
-
+        printTokens(entrada,start,ponto_de_token ,last_final);
         last_final = 0;
         current_state = 1;
             
-        start = token;
+        start = ponto_de_token ;
         count = start;
     }
 
     current_state = transitions[current_state][entrada[count]];
-    count++;
-
-    if(final_states[current_state]){ last_final = current_state; token = count; }
-
-        if (flag==1)
+    if (entrada[count]== '\0'){
             break;
     }
+    count++;
+
+    if(final_states[current_state]){ 
+        last_final = current_state; 
+        ponto_de_token  = count; }
+
+    }
+}
+
+
+void Compilador:: printTokens(std::string entrada, int start, int ptoken, int last_final)
+{
+    for(int i = start; i < ptoken;i++){
+            if(entrada[i]!=32 && entrada[i]!= 10)
+                std::cout << entrada[i];
+        }
+        
+        if(last_final != 12)
+            std::cout << " ";
+        std::cout << getToken(last_final);
+    
+        printf("\n");
 }
 
 std::string Compilador:: getToken(int finalState){
