@@ -1,8 +1,6 @@
 #include <iostream>
 #include "lexic.hpp"
 
-#define alphabet 38
-#define states 9
 
 int main(){
 
