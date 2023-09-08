@@ -47,7 +47,15 @@ int Compilador:: printTokens(std::string entrada, int start, int ptoken, int las
 {
     if(last_final!=0){
     std::cout << getToken(last_final);
-    
+
+    if(getToken(last_final) == "REAL" || getToken(last_final) == "INTEIRO")
+    {
+        printf(" ");
+        for(int i = start; i < ptoken;i++){
+            std::cout << entrada[i];
+        }
+    }
+
     printf("\n");
 
     }else if(entrada[start]!=10){
