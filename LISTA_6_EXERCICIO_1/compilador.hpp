@@ -6,6 +6,6 @@ class Compilador
 
     std::string getToken(int finalState);
 
-   int printTokens(std::string entrada, int start, int token, int last_final);
+    void printTokens(std::string entrada, int start, int token, int last_final);
 };
 
