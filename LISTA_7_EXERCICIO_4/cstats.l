@@ -16,12 +16,13 @@ int preproc = 0;
 %%
 
 <INITIAL>{
+    
 "//"  {linesw_comment++;}
 ";" {semi_colons++;}
 "#include" {preproc++;}
 "#define" {preproc++;}
 "/*" {BEGIN(BLOCK_COMMENT);}
-^[ ]*"\n" {blank_lines++; total_lines++;}
+^[ \r\t\a]*\n {blank_lines++; total_lines++;}
 "\n" { total_lines++;}
 .
 }
@@ -32,7 +33,6 @@ int preproc = 0;
 "*"
 [\n] { linesw_comment++; total_lines++; }
 }
-
 
 %%
 
