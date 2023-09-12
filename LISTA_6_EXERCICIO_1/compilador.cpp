@@ -2,13 +2,14 @@
 #include "compilador.hpp"
 #include "automato.hpp"
 
+
 void Compilador:: analyserLexic(std::string entrada){
     int last_final = 0;
     int current_state = 1;
     int start = 0;
     int ponto_de_token = 0;
     int count = 0;
-
+    
     while(true){
     
     if(current_state==0)
@@ -18,7 +19,8 @@ void Compilador:: analyserLexic(std::string entrada){
         last_final = 0;
         current_state = 1;
             
-        start = ponto_de_token ; 
+        start = ponto_de_token ;
+        
         count = start;
     }
 
@@ -35,10 +37,10 @@ void Compilador:: analyserLexic(std::string entrada){
     count++;
     
     if(final_states[current_state]){ 
-        last_final = current_state; 
+        last_final = current_state;
         ponto_de_token  = count; }
     }
-
+    
    
 }
 
@@ -47,21 +49,25 @@ int Compilador:: printTokens(std::string entrada, int start, int ptoken, int las
 {
     if(last_final!=0){
     std::cout << getToken(last_final);
+    
 
     if(getToken(last_final) == "REAL" || getToken(last_final) == "INTEIRO")
     {
         printf(" ");
-        for(int i = start; i < ptoken;i++){
+      
+        for(int i = start; i < ptoken-1;i++){
             std::cout << entrada[i];
         }
     }
 
     printf("\n");
+   
 
     }else if(entrada[start]!=10){
         printf("ERRO\n");
+       
         ptoken++;
-    }
+    }else
 
     return ptoken;
 }
