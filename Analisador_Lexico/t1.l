@@ -3,6 +3,8 @@
 %{
 #include <stdio.h>
 int entradas = 0;
+int linha = 0;
+int coluna = 0;
 void print_newline(int entradas);
 %}
 
@@ -71,16 +73,21 @@ void print_newline(int entradas);
 '[^'\n]*'               { print_newline(entradas); printf("CHARACTER(%s)", yytext); entradas++;}
 
 [ \t\n]     ; // Ignorar espaços em branco, tabulações e novas linhas
+"//" { }
+"/*" { }
+
 
 [_a-zA-Z][_a-zA-Z0-9]+ {
     if (strlen(yytext) > 255) {
-        print_newline(entradas); printf("Erro: Identificador excede o tamanho máximo de 255 caracteres");
+        
         entradas++;
     }else{
     print_newline(entradas); printf("IDENTIFIER(%s)", yytext);
     entradas++;
     }
 }
+
+. { print_newline(entradas); printf("error:lexical:%d:%d %s", linha, coluna, yytext); entradas++}
 
 %%
 
