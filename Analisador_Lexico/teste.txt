@@ -1,1 +1,1 @@
-ashdoash
+int main(@)

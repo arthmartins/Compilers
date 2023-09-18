@@ -3,91 +3,91 @@
 %{
 #include <stdio.h>
 int entradas = 0;
-int linha = 0;
-int coluna = 0;
+int linha = 1;
+int coluna = 1;
 void print_newline(int entradas);
 %}
 
 %%
-"void"       { print_newline(entradas); printf("VOID"); entradas++;}
-"int"        { print_newline(entradas); printf("INT"); entradas++;}
-"char"       { print_newline(entradas); printf("CHAR"); entradas++;}
-"return"     { print_newline(entradas); printf("RETURN"); entradas++;}
-"break"      { print_newline(entradas); printf("BREAK"); entradas++;}
-"switch"     { print_newline(entradas); printf("SWITCH"); entradas++;}
-"case"       { print_newline(entradas); printf("CASE"); entradas++;}
-"default"    { print_newline(entradas); printf("DEFAULT"); entradas++;}
-"do"         { print_newline(entradas); printf("DO"); entradas++;}
-"while"      { print_newline(entradas); printf("WHILE"); entradas++;}
-"for"        { print_newline(entradas); printf("FOR"); entradas++;}
-"if"         { print_newline(entradas); printf("IF"); entradas++;}
-"else"       { print_newline(entradas); printf("ELSE"); entradas++;}
-"typedef"    { print_newline(entradas); printf("TYPEDEF"); entradas++;}
-"struct"     { print_newline(entradas); printf("STRUCT"); entradas++;}
-"+"          { print_newline(entradas); printf("PLUS"); entradas++;}
-"-"          { print_newline(entradas); printf("MINUS"); entradas++;}
-"*"          { print_newline(entradas); printf("MULTIPLY"); entradas++;}
-"/"          { print_newline(entradas); printf("DIV"); entradas++;}
-"%"          { print_newline(entradas); printf("REMAINDER"); entradas++;}
-"++"         { print_newline(entradas); printf("INC"); entradas++;}
-"--"         { print_newline(entradas); printf("DEC"); entradas++;}
-"&"          { print_newline(entradas); printf("BITWISE_AND"); entradas++;}
-"|"          { print_newline(entradas); printf("BITWISE_OR"); entradas++;}
-"~"          { print_newline(entradas); printf("BITWISE_NOT"); entradas++;}
-"^"          { print_newline(entradas); printf("BITWISE_XOR"); entradas++;}
-"!"          { print_newline(entradas); printf("NOT"); entradas++;}
-"&&"         { print_newline(entradas); printf("LOGICAL_AND"); entradas++;}
-"||"         { print_newline(entradas); printf("LOGICAL_OR"); entradas++;}
-"=="         { print_newline(entradas); printf("EQUAL"); entradas++;}
-"!="         { print_newline(entradas); printf("NOT_EQUAL"); entradas++;}
-"<"          { print_newline(entradas); printf("LESS_THAN"); entradas++;}
-">"          { print_newline(entradas); printf("GREATER_THAN"); entradas++;}
-"<="         { print_newline(entradas); printf("LESS_EQUAL"); entradas++;}
-">="         { print_newline(entradas); printf("GREATER_EQUAL"); entradas++;}
-">>"         { print_newline(entradas); printf("R_SHIFT"); entradas++;}
-"<<"         { print_newline(entradas); printf("L_SHIFT"); entradas++;}
-"="          { print_newline(entradas); printf("ASSIGN"); entradas++;}
-"+="         { print_newline(entradas); printf("ADD_ASSIGN"); entradas++;}
-"-="         { print_newline(entradas); printf("MINUS_ASSIGN"); entradas++;}
-";"          { print_newline(entradas); printf("SEMICOLON"); entradas++;}
-","          { print_newline(entradas); printf("COMMA"); entradas++;}
-":"          { print_newline(entradas); printf("COLON"); entradas++;}
-"("          { print_newline(entradas); printf("L_PAREN"); entradas++;}
-")"          { print_newline(entradas); printf("R_PAREN"); entradas++;}
-"{"          { print_newline(entradas); printf("L_CURLY_BRACKET"); entradas++;}
-"}"          { print_newline(entradas); printf("R_CURLY_BRACKET"); entradas++;}
-"["          { print_newline(entradas); printf("L_SQUARE_BRACKET"); entradas++;}
-"]"          { print_newline(entradas); printf("R_SQUARE_BRACKET"); entradas++;}
-"?"          { print_newline(entradas); printf("TERNARY_CONDITIONAL"); entradas++;}
-"#"          { print_newline(entradas); printf("NUMBER_SIGN"); entradas++;}
-"->"         { print_newline(entradas); printf("POINTER"); entradas++;}
-"printf"     { print_newline(entradas); printf("PRINTF"); entradas++;}
-"scanf"      { print_newline(entradas); printf("SCANF"); entradas++;}
-"define"     { print_newline(entradas); printf("DEFINE"); entradas++;}
-"exit"       { print_newline(entradas); printf("EXIT"); entradas++;}
+"void"       { print_newline(entradas); printf("VOID"); coluna += strlen(yytext); entradas++;}
+"int"        { print_newline(entradas); printf("INT"); entradas++; coluna += strlen(yytext);}
+"char"       { print_newline(entradas); printf("CHAR"); entradas++;coluna += strlen(yytext);}
+"return"     { print_newline(entradas); printf("RETURN"); entradas++; coluna += strlen(yytext);}
+"break"      { print_newline(entradas); printf("BREAK"); entradas++; coluna += strlen(yytext);}
+"switch"     { print_newline(entradas); printf("SWITCH"); entradas++; coluna += strlen(yytext);}
+"case"       { print_newline(entradas); printf("CASE"); entradas++; coluna += strlen(yytext);}
+"default"    { print_newline(entradas); printf("DEFAULT"); entradas++; coluna += strlen(yytext);}
+"do"         { print_newline(entradas); printf("DO"); entradas++; coluna += strlen(yytext);}
+"while"      { print_newline(entradas); printf("WHILE"); entradas++; coluna += strlen(yytext);}
+"for"        { print_newline(entradas); printf("FOR"); entradas++; coluna += strlen(yytext);}
+"if"         { print_newline(entradas); printf("IF"); entradas++; coluna += strlen(yytext);}
+"else"       { print_newline(entradas); printf("ELSE"); entradas++; coluna += strlen(yytext);}
+"typedef"    { print_newline(entradas); printf("TYPEDEF"); entradas++; coluna += strlen(yytext);}
+"struct"     { print_newline(entradas); printf("STRUCT"); entradas++; coluna += strlen(yytext);}
+"+"          { print_newline(entradas); printf("PLUS"); entradas++; coluna += strlen(yytext);}
+"-"          { print_newline(entradas); printf("MINUS"); entradas++; coluna += strlen(yytext);}
+"*"          { print_newline(entradas); printf("MULTIPLY"); entradas++; coluna += strlen(yytext);}
+"/"          { print_newline(entradas); printf("DIV"); entradas++; coluna += strlen(yytext);}
+"%"          { print_newline(entradas); printf("REMAINDER"); entradas++; coluna += strlen(yytext);}
+"++"         { print_newline(entradas); printf("INC"); entradas++; coluna += strlen(yytext);}
+"--"         { print_newline(entradas); printf("DEC"); entradas++; coluna += strlen(yytext);}
+"&"          { print_newline(entradas); printf("BITWISE_AND"); entradas++; coluna += strlen(yytext);}
+"|"          { print_newline(entradas); printf("BITWISE_OR"); entradas++; coluna += strlen(yytext);}
+"~"          { print_newline(entradas); printf("BITWISE_NOT"); entradas++; coluna += strlen(yytext);}
+"^"          { print_newline(entradas); printf("BITWISE_XOR"); entradas++; coluna += strlen(yytext);}
+"!"          { print_newline(entradas); printf("NOT"); entradas++; coluna += strlen(yytext);}
+"&&"         { print_newline(entradas); printf("LOGICAL_AND"); entradas++; coluna += strlen(yytext);}
+"||"         { print_newline(entradas); printf("LOGICAL_OR"); entradas++; coluna += strlen(yytext);}
+"=="         { print_newline(entradas); printf("EQUAL"); entradas++; coluna += strlen(yytext);}
+"!="         { print_newline(entradas); printf("NOT_EQUAL"); entradas++; coluna += strlen(yytext);}
+"<"          { print_newline(entradas); printf("LESS_THAN"); entradas++; coluna += strlen(yytext);}
+">"          { print_newline(entradas); printf("GREATER_THAN"); entradas++; coluna += strlen(yytext);}
+"<="         { print_newline(entradas); printf("LESS_EQUAL"); entradas++; coluna += strlen(yytext);}
+">="         { print_newline(entradas); printf("GREATER_EQUAL"); entradas++; coluna += strlen(yytext);}
+">>"         { print_newline(entradas); printf("R_SHIFT"); entradas++; coluna += strlen(yytext);}
+"<<"         { print_newline(entradas); printf("L_SHIFT"); entradas++; coluna += strlen(yytext);}
+"="          { print_newline(entradas); printf("ASSIGN"); entradas++; coluna += strlen(yytext);}
+"+="         { print_newline(entradas); printf("ADD_ASSIGN"); entradas++; coluna += strlen(yytext);}
+"-="         { print_newline(entradas); printf("MINUS_ASSIGN"); entradas++; coluna += strlen(yytext);}
+";"          { print_newline(entradas); printf("SEMICOLON"); entradas++; coluna += strlen(yytext);}
+","          { print_newline(entradas); printf("COMMA"); entradas++; coluna += strlen(yytext);}
+":"          { print_newline(entradas); printf("COLON"); entradas++; coluna += strlen(yytext);}
+"("          { print_newline(entradas); printf("L_PAREN"); entradas++; coluna += strlen(yytext);}
+")"          { print_newline(entradas); printf("R_PAREN"); entradas++; coluna += strlen(yytext);}
+"{"          { print_newline(entradas); printf("L_CURLY_BRACKET"); entradas++; coluna += strlen(yytext);}
+"}"          { print_newline(entradas); printf("R_CURLY_BRACKET"); entradas++; coluna += strlen(yytext);}
+"["          { print_newline(entradas); printf("L_SQUARE_BRACKET"); entradas++; coluna += strlen(yytext);}
+"]"          { print_newline(entradas); printf("R_SQUARE_BRACKET"); entradas++; coluna += strlen(yytext);}
+"?"          { print_newline(entradas); printf("TERNARY_CONDITIONAL"); entradas++; coluna += strlen(yytext);}
+"#"          { print_newline(entradas); printf("NUMBER_SIGN"); entradas++; coluna += strlen(yytext);}
+"->"         { print_newline(entradas); printf("POINTER"); entradas++; coluna += strlen(yytext);}
+"printf"     { print_newline(entradas); printf("PRINTF"); entradas++; coluna += strlen(yytext);}
+"scanf"      { print_newline(entradas); printf("SCANF"); entradas++; coluna += strlen(yytext);}
+"define"     { print_newline(entradas); printf("DEFINE"); entradas++; coluna += strlen(yytext);}
+"exit"       { print_newline(entradas); printf("EXIT"); entradas++; coluna += strlen(yytext);}
 
-0[0-7]+               { print_newline(entradas); printf("NUM_OCTAL(%s)", yytext); entradas++;}
-[0-9]+                  { print_newline(entradas); printf("NUM_INTEGER(%s)", yytext); entradas++;}
-0[xX][0-9a-fA-F]+     { print_newline(entradas); printf("NUM_HEXA(%s)", yytext); entradas++;}
-\"[^\"\n]*\"            { print_newline(entradas); printf("STRING(%s)", yytext); entradas++;}
-'[^'\n]*'               { print_newline(entradas); printf("CHARACTER(%s)", yytext); entradas++;}
+0[0-7]+               { print_newline(entradas); printf("NUM_OCTAL(%s)", yytext); entradas++; coluna += strlen(yytext);}
+[0-9]+                  { print_newline(entradas); printf("NUM_INTEGER(%s)", yytext); entradas++; coluna += strlen(yytext);}
+0[xX][0-9a-fA-F]+     { print_newline(entradas); printf("NUM_HEXA(%s)", yytext); entradas++; coluna += strlen(yytext);}
+\"[^\"\n]*\"            { print_newline(entradas); printf("STRING(%s)", yytext); entradas++; coluna += strlen(yytext);}
+'[^'\n]*'               { print_newline(entradas); printf("CHARACTER(%s)", yytext); entradas++; coluna += strlen(yytext);}
 
+\n {linha++;  coluna = 1;}
 [ \t\n]     ; // Ignorar espaços em branco, tabulações e novas linhas
 "//" { }
 "/*" { }
-
 
 [_a-zA-Z][_a-zA-Z0-9]+ {
     if (strlen(yytext) > 255) {
         
         entradas++;
     }else{
-    print_newline(entradas); printf("IDENTIFIER(%s)", yytext);
+    print_newline(entradas); printf("IDENTIFIER(%s)", yytext);  coluna += strlen(yytext);
     entradas++;
     }
 }
 
-. { print_newline(entradas); printf("error:lexical:%d:%d %s", linha, coluna, yytext); entradas++}
+. { coluna++;print_newline(entradas); printf("error:lexical:%d:%d %s", linha, coluna, yytext); entradas++;}
 
 %%
 
