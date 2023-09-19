@@ -1,5 +1,0 @@
-INT
-IDENTIFIER(main)
-L_PAREN
-error:lexical:1:10 @
-R_PAREN

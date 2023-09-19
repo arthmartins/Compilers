@@ -5,10 +5,18 @@
 int entradas = 0;
 int linha = 1;
 int coluna = 1;
+int block_counter = 0;
+int block_coluna_counter=0;
+int save_coluna = 1;
 void print_newline(int entradas);
+char* repair_string(char* yytext);
 %}
 
+%x BLOCK_COMMENT
+
 %%
+<INITIAL>{
+
 "void"       { print_newline(entradas); printf("VOID"); coluna += strlen(yytext); entradas++;}
 "int"        { print_newline(entradas); printf("INT"); entradas++; coluna += strlen(yytext);}
 "char"       { print_newline(entradas); printf("CHAR"); entradas++;coluna += strlen(yytext);}
@@ -66,20 +74,26 @@ void print_newline(int entradas);
 "define"     { print_newline(entradas); printf("DEFINE"); entradas++; coluna += strlen(yytext);}
 "exit"       { print_newline(entradas); printf("EXIT"); entradas++; coluna += strlen(yytext);}
 
-0[0-7]+               { print_newline(entradas); printf("NUM_OCTAL(%s)", yytext); entradas++; coluna += strlen(yytext);}
-[0-9]+                  { print_newline(entradas); printf("NUM_INTEGER(%s)", yytext); entradas++; coluna += strlen(yytext);}
+
+0[1-7][0-7]*          { print_newline(entradas); printf("NUM_OCTAL(%s)", yytext); entradas++; coluna += strlen(yytext);}
+[0-9]+       { print_newline(entradas); printf("NUM_INTEGER(%s)", yytext); entradas++; coluna += strlen(yytext);}
 0[xX][0-9a-fA-F]+     { print_newline(entradas); printf("NUM_HEXA(%s)", yytext); entradas++; coluna += strlen(yytext);}
-\"[^\"\n]*\"            { print_newline(entradas); printf("STRING(%s)", yytext); entradas++; coluna += strlen(yytext);}
-'[^'\n]*'               { print_newline(entradas); printf("CHARACTER(%s)", yytext); entradas++; coluna += strlen(yytext);}
+\"(\\.|[^\"])*\"          { print_newline(entradas); printf("STRING(%s)", repair_string(yytext)); entradas++; coluna += strlen(yytext);}
+\'[^'\n]*\'*               { print_newline(entradas); printf("CHARACTER(%s)", repair_string(yytext)); entradas++; coluna += strlen(yytext);}
 
+[ \r\t\a] {coluna+= strlen(yytext);}
+\f {}
+\v {}
+\\ {}
+\0 {}
+"//".*\n { linha++;}
+"/*" { save_coluna = coluna; coluna += strlen(yytext); BEGIN(BLOCK_COMMENT);}
 \n {linha++;  coluna = 1;}
-[ \t\n]     ; // Ignorar espaços em branco, tabulações e novas linhas
-"//" { }
-"/*" { }
 
-[_a-zA-Z][_a-zA-Z0-9]+ {
+[_a-zA-Z][_a-zA-Z0-9]* {
     if (strlen(yytext) > 255) {
-        
+        print_newline(entradas);
+        printf("error:lexical:%d:%d: identifier too long", linha, coluna);
         entradas++;
     }else{
     print_newline(entradas); printf("IDENTIFIER(%s)", yytext);  coluna += strlen(yytext);
@@ -87,9 +101,34 @@ void print_newline(int entradas);
     }
 }
 
-. { coluna++;print_newline(entradas); printf("error:lexical:%d:%d %s", linha, coluna, yytext); entradas++;}
+. { print_newline(entradas); printf("error:lexical:%d:%d: %s", linha, coluna, yytext); entradas++;}
+}
+
+<BLOCK_COMMENT>{
+"/"*"*/" {linha+=block_counter;block_counter = 0; coluna += block_coluna_counter;
+       block_coluna_counter=0; coluna+=strlen(yytext); BEGIN(INITIAL); }
+"/*" {print_newline(entradas); printf("warning:%d:%d: '/*' within block comment",linha+block_counter,save_coluna+block_coluna_counter); block_coluna_counter+= strlen(yytext);}
+
+\n {block_counter++; block_coluna_counter =0;}
+<<EOF>> {print_newline(entradas); printf("error:lexical:%d:%d: unterminated comment", linha, save_coluna); BEGIN(INITIAL);}
+. {block_coluna_counter+= strlen(yytext);}
+
+}
 
 %%
+char* repair_string(char* yytext)
+{
+    int i,j;
+    char* new_string = (char*)malloc(strlen(yytext)-1);
+    j=0;
+    for(i = 1; i <= strlen(yytext);i++)
+    {
+        new_string[j] = yytext[i];
+        j++;
+    }
+    new_string[strlen(new_string)-1] = '\0';
+    return new_string;
+}
 
 void print_newline(int entradas){
     if(entradas > 0)
