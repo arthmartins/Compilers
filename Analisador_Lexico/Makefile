@@ -1,5 +1,5 @@
 #	Projeto
-PROJ = lexic
+PROJ = lexico
 
 #	Compilador
 CC = gcc
@@ -11,7 +11,7 @@ C_SOURCE = lex.yy.cc
 H_SOURCE = $(wildcard *.h)
 
 #	.l
-L_SOURCE = t1.l
+L_SOURCE = lexico.l
 
 #	Flags
 CC_FLAGS = -fstack-protector-all	\

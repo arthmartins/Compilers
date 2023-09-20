@@ -82,8 +82,9 @@ char* repair_string(char* yytext);
 \'[^'\n]*\'*               { print_newline(entradas); printf("CHARACTER(%s)", repair_string(yytext)); entradas++; coluna += strlen(yytext);}
 
 [ \r\t\a] {coluna+= strlen(yytext);}
-\f {}
+\f {} 
 \v {}
+\b {}
 \\ {}
 \0 {}
 "//".*\n { linha++;}
