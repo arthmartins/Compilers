@@ -6,6 +6,5 @@ class Lexico
 
     std::string getToken(int finalState);
 
-    void printTokens(std::string entrada, int start, int token, int last_final);
 };
 

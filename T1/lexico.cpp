@@ -9,7 +9,7 @@ void Lexico:: analyserLexic(std::string entrada){
     int ponto_de_token = 0;
     int count = 0;
     int linha = 1;
-    int coluna = 0;
+    int coluna = 1;
     std::string token; 
 
     while(true){
@@ -32,7 +32,6 @@ void Lexico:: analyserLexic(std::string entrada){
             printf("\n");
         }
         
-        //if(entrada[start]==32 || entrada[start]==10 ){ponto_de_token++;}
         last_final = 0;
         current_state = 1;
             
@@ -42,40 +41,26 @@ void Lexico:: analyserLexic(std::string entrada){
         
     }
 
+    ++coluna;
+    
     if(entrada[count]==10){
-        coluna = 0;
+        coluna = 1;
         linha++;
         ponto_de_token++;
     }
-
     current_state = transitions[current_state][entrada[count]];
     
     if (entrada[count] == '\0'){
         break;
     }
 
-    ++coluna;
     ++count;
     
     if(final_states[current_state]){ 
         last_final = current_state; 
         ponto_de_token  = count; }
-
-        std::cout << coluna << " ";
-
     }
     
-}
-
-
-void Lexico:: printTokens(std::string entrada, int start, int ptoken, int last_final)
-{
-    
-    //std::cout << getToken(last_final);
-
-    // if(entrada[ptoken+1]!='\0')
-    //     printf("\n");
-
 }
 
 std::string Lexico:: getToken(int finalState){
