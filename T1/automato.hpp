@@ -466,7 +466,7 @@ std::vector<std::string> tokens{
                             "ID",   // 102
                             "FALSO",   // 103
                             "FACA",   // 104
-                            "ID",   // 105
+                            "FIM",   // 105
                             "ID",   // 106
                             "ID",   // 107
                             "ID",   // 108
@@ -521,7 +521,7 @@ std::vector<std::string> tokens{
                             "ID",   // 157
                             "ID",   // 158
                             "DIFERENTE",   // 159
-                            "ATRIBUCAO",   // 160
+                            "ATRIBUICAO",   // 160
                             "IGUAL",   // 161
                             "PONTO_VIRGULA",   // 162
                             "DOIS_PONTOS",   // 163
