@@ -76,7 +76,6 @@ Expressao_' -> = ExpressaoSimples Expressao_'
 Expressao_' -> <> ExpressaoSimples Expressao_'
 Expressao_' -> < ExpressaoSimples Expressao_'
 Expressao_' -> <= ExpressaoSimples Expressao_'
-Expressao_' -> => ExpressaoSimples Expressao_'
 Expressao_' -> >= ExpressaoSimples Expressao_'
 Expressao_' -> > ExpressaoSimples Expressao_'
 Expressao_'->
