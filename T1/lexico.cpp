@@ -64,6 +64,6 @@ void Lexico:: analyserLexic(std::string entrada){
 }
 
 std::string Lexico:: getToken(int finalState){
-    
-    return(tokens[finalState]);
+   
+    return(tokens[tokensEnum[finalState]]);
 }
