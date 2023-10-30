@@ -1,3 +1,6 @@
+#ifndef SINTATICO_HPP
+#define SINTATICO_HPP
+
 #include <iostream>
 #include "lexico.hpp"
 using namespace std;
@@ -5,6 +8,10 @@ using namespace std;
 
 class Sintatico
 {
+public:
+
+void setEntrada(string inString);
+
 void ErroSintatico();
 
 void advance();
@@ -84,4 +91,6 @@ void ExprIter();
 void ExprIter_prime();
 
 
-}
+};
+
+#endif

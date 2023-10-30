@@ -1,5 +1,5 @@
 #include <iostream>
-#include "lexico.hpp"
+#include "Sintatico.hpp"
 
 int main(){
 
@@ -8,8 +8,12 @@ int main(){
     while ((c = getchar()) != EOF) {
         entrada += c;
     }
-    Lexico lexico;
-    lexico.analyserLexic(entrada);
+    
+    Sintatico sintatico;
+    sintatico.setEntrada(entrada);
+    sintatico.Programa();
+    // Lexico lexico;
+    // lexico.analyserLexic(entrada);
 
 
 }

@@ -1,5 +1,4 @@
 #include <iostream>
-#include "lexico.hpp"
 #include "Sintatico.hpp"
 #include "automato.hpp"
 
@@ -7,21 +6,40 @@ using namespace std;
 
 int token;
 
+static string entrada;
+
+Lexico lexico;
+
+void Sintatico:: setEntrada(string inString){
+    entrada = inString;
+    lexico.setVariaveis();
+    token = lexico.analyserLexic(entrada);
+    while(token == COMENTARIO_LINHA || token == COMENTARIO_BLOCO){
+        token = lexico.analyserLexic(entrada);
+    }
+}
+
 void Sintatico:: ErroSintatico()
 {
-    //TODO: função que avança um token
+    printf("ERRO DE SINTAXE. Linha: %d Coluna: %d -> ''",lexico.getLinha_token(),lexico.getColuna_token());
+    exit(1);
 }
 
 void Sintatico:: advance()
 {
-    //TODO: função que avança um token
+    token = lexico.analyserLexic(entrada);
+    while(token == COMENTARIO_LINHA || token == COMENTARIO_BLOCO || token == WHITESPACE){
+        token = lexico.analyserLexic(entrada);
+    }
 }
 
 void Sintatico:: eat(int t){
-    //TODO: função que comprara token
     if(token == t)
     {
-        //advance();
+        advance();
+
+    }else{
+        ErroSintatico();
     }
 }
 
@@ -29,7 +47,7 @@ void Sintatico:: Programa()
 {
     eat(ALGORITMO); eat(ID); eat(PONTO_VIRGULA); BlocoVariaveis(); 
     ProcedimentoFuncao(); BlocoComandos(); eat(PONTO);
-    cout << "PROGRAMA CORRETO";
+    cout << "PROGRAMA CORRETO.";
 }
 
 void Sintatico:: ProcedimentoFuncao()
@@ -76,6 +94,7 @@ void Sintatico:: DeclaraFuncao()
            Parametros();
            eat(DOIS_PONTOS);
            TipoBasico();
+           eat(PONTO_VIRGULA);
            DeclaraParametros();
            BlocoVariaveis();
            BlocoComandos();
@@ -166,7 +185,8 @@ void Sintatico:: BlocoVariaveis()
             break;
         case(PROCEDIMENTO): 
             break;
-
+        case(FUNCAO):
+            break;
         default: 
             ErroSintatico(); 
             break;
@@ -343,7 +363,7 @@ void Sintatico:: DeclaraIdentificador_prime()
     {
         case(VIRGULA): 
             eat(VIRGULA);
-            DeclaraIdentificador_prime();
+            DeclaraIdentificador(); // AQUI ESTAVA DECLARAIDENTIFICADOR_PRIME
             break;
         case(PONTO_VIRGULA):
             break;
@@ -767,8 +787,7 @@ void Sintatico:: Expressao_prime()
 
             break;
         case(DIFERENTE):
-            eat(MENOR);
-            eat(MAIOR);
+            eat(DIFERENTE);
             ExpressaoSimples();
             Expressao_prime();
             break;
