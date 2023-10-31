@@ -2,10 +2,13 @@
 #include "lexico.hpp"
 #include "automato.hpp"
 
+//TODO: criar um inteiro de coluna e uma linha só para o token //// descontar a coluna quando o token é uma string 
+
     static int start;
     static int ponto_de_token;
     static int count;
-    static int linha;
+    static int linhaToken;
+    static int colunaToken;
     static std::string token;
 
 void Lexico::setVariaveis()
@@ -28,13 +31,19 @@ int Lexico:: analyserLexic(std::string entrada){
     if(current_state==0)
     {
         if(last_final!=0){
-        //token = getToken(last_final);
-        //if(token!= "WHITESPACE") 
-        //{
-            //std::cout << token << "\n";
-        setToken(entrada,start, ponto_de_token);
-        tokenNumero = tokensEnum[last_final];            
-        //}
+        
+            if(entrada[ponto_de_token]==10)
+            {
+                colunaToken -= 1;
+                linhaToken = this->linha_token -1;
+            }else{
+                colunaToken = this->coluna_token-1;
+                linhaToken = this->linha_token;
+            }
+
+            setToken(entrada,start, ponto_de_token);
+            tokenNumero = tokensEnum[last_final];            
+            
 
         }else if(entrada[start]!=10 && entrada[start]!=32){
             printf("ERRO LEXICO. Linha: %d Coluna: %d -> '%c'",this->linha_token,this->coluna_token,entrada[count-1]);
@@ -46,6 +55,7 @@ int Lexico:: analyserLexic(std::string entrada){
             
         start = ponto_de_token ;
         coluna_token -= count - start;
+
         count = start;
 
         if (tokenNumero != -1)
@@ -55,12 +65,13 @@ int Lexico:: analyserLexic(std::string entrada){
     coluna_token++;
 
     if(entrada[count]==10){
+        colunaToken = coluna_token; 
         coluna_token = 0;
         this->linha_token++;
         ponto_de_token++;
     }
     current_state = transitions[current_state][entrada[count]];
-    
+
     if (entrada[count] == '\0'){
         break;
     }
@@ -85,7 +96,7 @@ void Lexico::setColuna_token()
 
 int Lexico::getColuna_token()
 {
-    return coluna_token;
+    return colunaToken;
 }
 
 void Lexico::setLinha_token()
@@ -95,7 +106,7 @@ void Lexico::setLinha_token()
 
 int Lexico::getLinha_token()
 {
-    return linha_token;
+    return linhaToken;
 }
 
 void Lexico::setToken(std:: string entrada, int inicio_token, int fim_token)
@@ -106,4 +117,9 @@ void Lexico::setToken(std:: string entrada, int inicio_token, int fim_token)
             token = token + entrada[i];  
         
     }
+}
+
+std::string Lexico::getToken()
+{
+    return token;
 }

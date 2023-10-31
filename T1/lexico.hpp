@@ -11,6 +11,7 @@ class Lexico
         int getLinha_token();
         int getSimboloErro();
         void setToken(std::string entrada, int inicio_token, int fim_token);
+        std::string getToken();
         void setVariaveis();
         int analyserLexic(std::string entrada);
 

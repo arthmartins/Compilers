@@ -14,14 +14,16 @@ void Sintatico:: setEntrada(string inString){
     entrada = inString;
     lexico.setVariaveis();
     token = lexico.analyserLexic(entrada);
-    while(token == COMENTARIO_LINHA || token == COMENTARIO_BLOCO){
+    while(token == COMENTARIO_LINHA || token == COMENTARIO_BLOCO || token == WHITESPACE){
         token = lexico.analyserLexic(entrada);
     }
 }
 
 void Sintatico:: ErroSintatico()
 {
-    printf("ERRO DE SINTAXE. Linha: %d Coluna: %d -> ''",lexico.getLinha_token(),lexico.getColuna_token());
+    cout << "ERRO DE SINTAXE. Linha: " <<  lexico.getLinha_token() << " Coluna: " << lexico.getColuna_token()-lexico.getToken().size()+1;
+    cout << " -> ";
+    cout << "'"<< lexico.getToken()<<"'";
     exit(1);
 }
 
