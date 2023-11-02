@@ -12,8 +12,8 @@ int main(){
     Sintatico sintatico;
     sintatico.setEntrada(entrada);
     sintatico.Programa();
-    // Lexico lexico;
-    // lexico.analyserLexic(entrada);
+    
+    std::cout << "PROGRAMA CORRETO.";
 
 
 }

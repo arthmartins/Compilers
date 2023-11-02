@@ -49,7 +49,6 @@ void Sintatico:: Programa()
 {
     eat(ALGORITMO); eat(ID); eat(PONTO_VIRGULA); BlocoVariaveis(); 
     ProcedimentoFuncao(); BlocoComandos(); eat(PONTO);
-    cout << "PROGRAMA CORRETO.";
 }
 
 void Sintatico:: ProcedimentoFuncao()
@@ -201,32 +200,32 @@ void Sintatico:: Declaracoes()
     {
         case(TIPO): 
             DeclaraTipo();
-            Declaracoes_prime();
+            Declaracoes_aux();
             break;
 
         case(INTEIRO): 
             DeclaraVariaveis();
-            Declaracoes_prime();
+            Declaracoes_aux();
             break;
 
         case(REAL): 
             DeclaraVariaveis();
-            Declaracoes_prime();
+            Declaracoes_aux();
             break;
 
         case(CARACTERE): 
             DeclaraVariaveis();
-            Declaracoes_prime();
+            Declaracoes_aux();
             break;
 
         case(LOGICO): 
             DeclaraVariaveis();
-            Declaracoes_prime();
+            Declaracoes_aux();
             break;
 
         case(ID): 
             DeclaraVariaveis();
-            Declaracoes_prime();
+            Declaracoes_aux();
             break;
     default: 
             ErroSintatico(); 
@@ -234,7 +233,7 @@ void Sintatico:: Declaracoes()
     }
 }
 
-void Sintatico:: Declaracoes_prime()
+void Sintatico:: Declaracoes_aux()
 {
      switch (token)
     {
@@ -350,7 +349,7 @@ void Sintatico:: DeclaraIdentificador()
     {
         case(ID): 
             eat(ID);
-            DeclaraIdentificador_prime();
+            DeclaraIdentificador_aux();
             break;
             
     default: 
@@ -359,13 +358,13 @@ void Sintatico:: DeclaraIdentificador()
     }
 }
 
-void Sintatico:: DeclaraIdentificador_prime()
+void Sintatico:: DeclaraIdentificador_aux()
 {
      switch (token)
     {
         case(VIRGULA): 
             eat(VIRGULA);
-            DeclaraIdentificador(); // AQUI ESTAVA DECLARAIDENTIFICADOR_PRIME
+            DeclaraIdentificador();
             break;
         case(PONTO_VIRGULA):
             break;
@@ -404,7 +403,7 @@ void Sintatico:: Dimensao()
             eat(NUM_INTEIRO);
             eat(DOIS_PONTOS);
             eat(NUM_INTEIRO);
-            Dimensao_prime();
+            Dimensao_aux();
             break;
         
         
@@ -415,7 +414,7 @@ void Sintatico:: Dimensao()
     }
 }
 
-void Sintatico:: Dimensao_prime()
+void Sintatico:: Dimensao_aux()
 {
      switch (token)
     {
@@ -488,43 +487,43 @@ void Sintatico:: ListaComandos()
         case(ID): 
             Comandos();
             eat(PONTO_VIRGULA);
-            ListaComandos_prime();
+            ListaComandos_aux();
             break;
 
         case(SE): 
             Comandos();
             eat(PONTO_VIRGULA);
-            ListaComandos_prime();
+            ListaComandos_aux();
             break;
 
         case(ENQUANTO): 
             Comandos();
             eat(PONTO_VIRGULA);
-            ListaComandos_prime();
+            ListaComandos_aux();
             break;
 
         case(PARA): 
             Comandos();
             eat(PONTO_VIRGULA);
-            ListaComandos_prime();
+            ListaComandos_aux();
             break;
 
         case(REPITA): 
             Comandos();
             eat(PONTO_VIRGULA);
-            ListaComandos_prime();
+            ListaComandos_aux();
             break;
 
         case(LEIA): 
             Comandos();
             eat(PONTO_VIRGULA);
-            ListaComandos_prime();
+            ListaComandos_aux();
             break;
 
         case(IMPRIMA): 
             Comandos();
             eat(PONTO_VIRGULA);
-            ListaComandos_prime();
+            ListaComandos_aux();
             break;
 
     default: 
@@ -533,7 +532,7 @@ void Sintatico:: ListaComandos()
     }
 }
 
-void Sintatico:: ListaComandos_prime()
+void Sintatico:: ListaComandos_aux()
 {
      switch (token)
     {
@@ -730,46 +729,46 @@ void Sintatico:: Expressao()
     {
         case(ABRE_PAREN):
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
 
             break;
         case(NAO):
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
         
         case(NUM_INTEIRO):
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
         
         case(NUM_REAL):
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
         case(VERDADEIRO):
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
         case(FALSO):
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
         case(STRING):
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
         case(ID):
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
         case(MAIS):
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
         case(MENOS):
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
     
     default: 
@@ -778,45 +777,45 @@ void Sintatico:: Expressao()
     }
 }
 
-void Sintatico:: Expressao_prime()
+void Sintatico:: Expressao_aux()
 {
      switch (token)
     {
         case(IGUAL):
             eat(IGUAL);
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
 
             break;
         case(DIFERENTE):
             eat(DIFERENTE);
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
         
         case(MENOR):
             eat(MENOR);
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
         
         case(MENOR_IGUAL):
             eat(MENOR_IGUAL);
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
 
             break;
 
         case(MAIOR):
             eat(MAIOR);
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
             break;
 
         case(MAIOR_IGUAL):
             eat(MAIOR_IGUAL);
             ExpressaoSimples();
-            Expressao_prime();
+            Expressao_aux();
 
             break;
 
@@ -848,60 +847,60 @@ void Sintatico:: ExpressaoSimples()
     {
         case(ABRE_PAREN):
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
 
             break;
         case(NAO):
 
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
 
             break;
         
         case(NUM_INTEIRO):
 
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
             
             break;
         
         case(NUM_REAL):
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
             
             break;
         case(VERDADEIRO):
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
             
             break;
         case(FALSO):
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
             
             break;
         case(STRING):
 
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
             
             break;
         case(ID):
 
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
             
             break;
         case(MAIS):
             eat(MAIS);
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
             
             break;
         case(MENOS):
             eat(MENOS);
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
             break;
     
     default: 
@@ -910,7 +909,7 @@ void Sintatico:: ExpressaoSimples()
     }
 }
 
-void Sintatico:: ExpressaoSimples_prime()
+void Sintatico:: ExpressaoSimples_aux()
 {
      switch (token)
     {
@@ -918,19 +917,19 @@ void Sintatico:: ExpressaoSimples_prime()
         case(MAIS):
             eat(MAIS);
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
 
             break;
         case(MENOS):
             eat(MENOS);
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
             break;
 
         case(OU):
             eat(OU);
             Termo();
-            ExpressaoSimples_prime();
+            ExpressaoSimples_aux();
             break;
         case(PONTO_VIRGULA):
             break;
@@ -973,37 +972,37 @@ void Sintatico:: Termo()
     {
         case(ABRE_PAREN):
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
         case(NAO):
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
         
         case(NUM_INTEIRO):
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
         
         case(NUM_REAL):
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
         case(VERDADEIRO):
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
         case(FALSO):
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
         case(STRING):
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
         case(ID):
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
     
     default: 
@@ -1012,29 +1011,29 @@ void Sintatico:: Termo()
     }
 }
 
-void Sintatico:: Termo_prime()
+void Sintatico:: Termo_aux()
 {
      switch (token)
     {
         case(VEZES):
             eat(VEZES);
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
         case(DIVISAO):
             eat(DIVISAO);
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
         case(DIV):
             eat(DIV);
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
         case(E):
             eat(E);
             Fator();
-            Termo_prime();
+            Termo_aux();
             break;
 
         case(MAIS):
@@ -1114,7 +1113,7 @@ void Sintatico:: Fator()
             break;
         case(ID):
             eat(ID);
-            Fator_prime();
+            Fator_aux();
             break;
     
     default: 
@@ -1123,7 +1122,7 @@ void Sintatico:: Fator()
     }
 }
 
-void Sintatico:: Fator_prime()
+void Sintatico:: Fator_aux()
 {
      switch (token)
     {
@@ -1196,7 +1195,7 @@ void Sintatico:: Variavel()
     {
         case(ID):
             eat(ID);
-            Variavel_prime();
+            Variavel_aux();
             break;
     
     default: 
@@ -1205,7 +1204,7 @@ void Sintatico:: Variavel()
     }
 }
 
-void Sintatico:: Variavel_prime()
+void Sintatico:: Variavel_aux()
 {
      switch (token)
     {
@@ -1229,46 +1228,46 @@ void Sintatico:: ExprIter()
     {
         case(ABRE_PAREN):
             Expressao();
-            ExprIter_prime();
+            ExprIter_aux();
 
             break;
         case(NAO):
             Expressao();
-            ExprIter_prime();
+            ExprIter_aux();
             break;
         
         case(NUM_INTEIRO):
             Expressao();
-            ExprIter_prime();
+            ExprIter_aux();
             break;
         
         case(NUM_REAL):
             Expressao();
-            ExprIter_prime();
+            ExprIter_aux();
             break;
         case(VERDADEIRO):
             Expressao();
-            ExprIter_prime();
+            ExprIter_aux();
             break;
         case(FALSO):
             Expressao();
-            ExprIter_prime();
+            ExprIter_aux();
             break;
         case(STRING):
             Expressao();
-            ExprIter_prime();
+            ExprIter_aux();
             break;
         case(ID):
             Expressao();
-            ExprIter_prime();
+            ExprIter_aux();
             break;
         case(MAIS):
             Expressao();
-            ExprIter_prime();
+            ExprIter_aux();
             break;
         case(MENOS):
             Expressao();
-            ExprIter_prime();
+            ExprIter_aux();
             break;
     
     default: 
@@ -1277,7 +1276,7 @@ void Sintatico:: ExprIter()
     }
 }
 
-void Sintatico:: ExprIter_prime()
+void Sintatico:: ExprIter_aux()
 {
      switch (token)
     {

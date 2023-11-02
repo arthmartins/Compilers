@@ -34,7 +34,7 @@ void BlocoVariaveis();
 
 void Declaracoes();
 
-void Declaracoes_prime();
+void Declaracoes_aux();
 
 void DeclaraTipo();
 
@@ -42,13 +42,13 @@ void DeclaraVariaveis();
 
 void DeclaraIdentificador();
 
-void DeclaraIdentificador_prime();
+void DeclaraIdentificador_aux();
 
 void VetorMatriz();
 
 void Dimensao();
 
-void Dimensao_prime();
+void Dimensao_aux();
 
 void TipoBasico();
 
@@ -56,7 +56,7 @@ void BlocoComandos();
 
 void ListaComandos();
 
-void ListaComandos_prime();
+void ListaComandos_aux();
 
 void Comandos();
 
@@ -68,27 +68,27 @@ void Comandos_para();
 
 void Expressao();
 
-void Expressao_prime();
+void Expressao_aux();
 
 void ExpressaoSimples();
 
-void ExpressaoSimples_prime();
+void ExpressaoSimples_aux();
 
 void Termo();
 
-void Termo_prime();
+void Termo_aux();
 
 void Fator();
 
-void Fator_prime();
+void Fator_aux();
 
 void Variavel();
 
-void Variavel_prime();
+void Variavel_aux();
 
 void ExprIter();
 
-void ExprIter_prime();
+void ExprIter_aux();
 
 
 };
