@@ -2,22 +2,31 @@
 
 %{
 #include <stdio.h>
+#include <stdio.h>
+#include <string.h>
+#include <sintatico.tab.h>
+extern YYSTYPE yylval;
 int entradas = 0;
 int linha = 1;
 int coluna = 1;
 int block_counter = 0;
 int block_coluna_counter=0;
 int save_coluna = 1;
-void  (int entradas);
-char* repair_string(char* yytext);
+char erro_linha[2048];
+void pick_erro_linha(int linha);
+
+
 %}
+
 
 %x BLOCK_COMMENT
 
+
 %%
+
 <INITIAL>{
 
-"void"       {   coluna += strlen(yytext); return VOID;}
+"void"       {  coluna += strlen(yytext); return VOID;}
 "int"        {  coluna += strlen(yytext); return INT;}
 "char"       {  coluna += strlen(yytext); return CHAR;}
 "return"     {  coluna += strlen(yytext); return RETURN;}
@@ -73,10 +82,9 @@ char* repair_string(char* yytext);
 "scanf"      {  coluna += strlen(yytext); return SCANF;}
 "define"     {  coluna += strlen(yytext); return DEFINE;}
 "exit"       {  coluna += strlen(yytext); return EXIT;}
-
-0[1-7][0-7]*          {   coluna += strlen(yytext); return NUM_OCTAL;}
-[0-9]+       {   coluna += strlen(yytext); return NUM_INTEGER;}
-0[xX][0-9a-fA-F]+     {   coluna += strlen(yytext); return NUM_HEXA;}
+"0"[1-7][0-7]* {  coluna += strlen(yytext); return NUM_OCTAL;}
+[0-9]+       {  coluna += strlen(yytext); return NUM_INTEGER;}
+"0"[xX][0-9a-fA-F]+     {   coluna += strlen(yytext); return NUM_HEXA;}
 \"(\\.|[^\"])*\"        { coluna += strlen(yytext); return STRING;}
 \'[^'\n]*\'*            { coluna += strlen(yytext); return CHARACTER;}
 
@@ -100,10 +108,12 @@ char* repair_string(char* yytext);
     }
 }
 
-. { printf("error:lexical:%d:%d: %s", linha, coluna, yytext);}
+. { printf("error:lexical:%d:%d: %s", linha, coluna, yytext);} 
+
 }
 
 <BLOCK_COMMENT>{
+
 "/"*"*/" {linha+=block_counter;block_counter = 0; coluna += block_coluna_counter;
        block_coluna_counter=0; coluna+=strlen(yytext); BEGIN(INITIAL); }
 "/*" {print_newline(entradas); entradas++; printf("warning:%d:%d: '/*' within block comment",linha+block_counter,save_coluna+block_coluna_counter); block_coluna_counter+= strlen(yytext);}
@@ -115,18 +125,13 @@ char* repair_string(char* yytext);
 }
 
 %%
-char* repair_string(char* yytext)
+
+void pick_erro_linha(int linha)
 {
-    int i,j;
-    char* new_string = (char*)malloc(strlen(yytext)-1);
-    j=0;
-    for(i = 1; i <= strlen(yytext);i++)
-    {
-        new_string[j] = yytext[i];
-        j++;
+    fseek(stdin, 0, SEEK_SET);
+    for(int i = 0; i < linha; i++) {
+        fgets(erro_linha, 1000, stdin);
     }
-    new_string[strlen(new_string)-1] = '\0';
-    return new_string;
 }
 
 void print_newline(int entradas){

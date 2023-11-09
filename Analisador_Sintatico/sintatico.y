@@ -3,8 +3,15 @@
 #include <stdio.h>
 extern int yylex();
 extern char* yytext;
+extern int entradas;
+extern int linha;
+extern int coluna;
+extern int yychar;
+extern char erro_linha[2048];
+extern void pick_erro_linha(int linha);
 
 void yyerror(void *s); 
+
 %}
 
 %token VOID
@@ -87,7 +94,7 @@ Declaracoes: NUMBER_SIGN DEFINE IDENTIFIER Expressao {}
 
 Funcao: Tipo Asterisco_aux IDENTIFIER Parametros L_CURLY_BRACKET Funcao_aux Comandos R_CURLY_BRACKET {}
 
-Funcao_aux: Declara_variavel Declara_variavel_aux {}
+Funcao_aux: Declara_variavel Funcao_aux {}
                     | {}
 
 Asterisco_aux: MULTIPLY Asterisco_aux {}
@@ -95,7 +102,7 @@ Asterisco_aux: MULTIPLY Asterisco_aux {}
 
 Declara_variavel: Tipo Declara_variavel_aux SEMICOLON {}
 
-Declara_variavel_aux: Asterisco_aux IDENTIFIER Exp_Bet_Paren Declara_variavel_loop {}
+Declara_variavel_aux: Asterisco_aux IDENTIFIER Exp_Bet_Paren Declara_variavel_ExpAtrib Declara_variavel_loop {}
 
 Declara_variavel_loop: COMMA Declara_variavel_aux {}
                     |   {}
@@ -254,9 +261,32 @@ Numero: NUM_INTEGER {}
 
 %%
 
+void yyerror(void *s) {
+	
+    pick_erro_linha(linha);
+    if(entradas > 0)
+        printf("\n");
+     if (yychar == 0) {
+                printf("error:syntax:%d:%d: expected declaration or statement at end of input\n%s\n", linha, coluna, erro_linha);
+        } else {
+	        coluna -= strlen(yytext);
+                printf("error:syntax:%d:%d: %s\n%s", linha, coluna, yytext, erro_linha);
+        }
+
+	for(int i = 0; i < coluna -1; i++) {
+		printf(" ");
+	}
+	printf("^");
+	exit(0);
+    
+}
 
 int main(int argc, char** argv)
 {
     yyparse();
+    if(entradas > 0)
+        printf("\n");
+    
+    printf("SUCCESSFUL COMPILATION.");
     return 0;
 }
