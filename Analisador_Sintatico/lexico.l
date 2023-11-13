@@ -104,13 +104,13 @@ void pick_erro_linha(int linha);
 [_a-zA-Z][_a-zA-Z0-9]* {
     if (strlen(yytext) > 255) {
         printf("error:lexical:%d:%d: identifier too long", linha, coluna);
-        
+        exit(0);
     }else{
     coluna += strlen(yytext); return IDENTIFIER;
     }
 }
 
-. { printf("error:lexical:%d:%d: %s", linha, coluna, yytext);} 
+. { printf("error:lexical:%d:%d: %s", linha, coluna, yytext); exit(0);} 
 
 }
 
@@ -121,7 +121,7 @@ void pick_erro_linha(int linha);
 "/*" {print_newline(entradas); entradas++; printf("warning:%d:%d: '/*' within block comment",linha+block_counter,save_coluna+block_coluna_counter); block_coluna_counter+= strlen(yytext);}
 
 \n {block_counter++; block_coluna_counter =0;}
-<<EOF>> {print_newline(entradas); printf("error:lexical:%d:%d: unterminated comment", linha, save_coluna); BEGIN(INITIAL);}
+<<EOF>> {print_newline(entradas); printf("error:lexical:%d:%d: unterminated comment", linha, save_coluna); exit(0); BEGIN(INITIAL);}
 . {block_coluna_counter+= strlen(yytext);}
 
 }
