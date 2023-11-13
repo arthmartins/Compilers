@@ -7,6 +7,8 @@ extern int entradas;
 extern int linha;
 extern int coluna;
 extern int yychar;
+extern int linha_anterior;
+extern int coluna_anterior;
 extern char erro_linha[2048];
 extern void pick_erro_linha(int linha);
 
@@ -263,20 +265,28 @@ Numero: NUM_INTEGER {}
 
 void yyerror(void *s) {
 	
-    pick_erro_linha(linha);
+    //linha = linha_anterior;
+    //coluna = coluna_anterior;
+    //pick_erro_linha(linha);
     if(entradas > 0)
         printf("\n");
      if (yychar == 0) {
-                printf("error:syntax:%d:%d: expected declaration or statement at end of input\n%s\n", linha, coluna, erro_linha);
+
+                pick_erro_linha(linha_anterior);
+                printf("error:syntax:%d:%d: expected declaration or statement at end of input\n%s", linha_anterior, coluna_anterior, erro_linha);
+                for(int i = 0; i < coluna_anterior -1; i++) {
+                    printf(" ");
+                }
+                printf("^");
         } else {
+            pick_erro_linha(linha);
 	        coluna -= strlen(yytext);
                 printf("error:syntax:%d:%d: %s\n%s", linha, coluna, yytext, erro_linha);
+                for(int i = 0; i < coluna -1; i++) {
+                    printf(" ");
+                }
+                printf("^");
         }
-
-	for(int i = 0; i < coluna -1; i++) {
-		printf(" ");
-	}
-	printf("^");
 	exit(0);
     
 }

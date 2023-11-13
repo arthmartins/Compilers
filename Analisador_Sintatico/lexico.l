@@ -9,6 +9,8 @@ extern YYSTYPE yylval;
 int entradas = 0;
 int linha = 1;
 int coluna = 1;
+int linha_anterior = 1;
+int coluna_anterior =1;
 int block_counter = 0;
 int block_coluna_counter=0;
 int save_coluna = 1;
@@ -95,9 +97,9 @@ void pick_erro_linha(int linha);
 \\ {}
 \0 {}
 
-"//".*\n { linha++;}
+"//".*\n { linha_anterior= linha; coluna_anterior= coluna; linha++;}
 "/*" { save_coluna = coluna; coluna += strlen(yytext); BEGIN(BLOCK_COMMENT);}
-\n {linha++;  coluna = 1; }
+\n {linha_anterior= linha; coluna_anterior= coluna-1;linha++;  coluna = 1; }
 
 [_a-zA-Z][_a-zA-Z0-9]* {
     if (strlen(yytext) > 255) {
