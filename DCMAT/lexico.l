@@ -87,7 +87,7 @@ void pick_erro_linha(int linha);
 ":="          {  coluna += strlen(yytext); return ATRIBUTE;}
 
 [0-9]+       {  coluna += strlen(yytext); return NUM_INTEGER;}
-[0-9]+"."[0-9]+    {   coluna += strlen(yytext); return NUM_HEXA;}
+[0-9]+"."[0-9]+    {   coluna += strlen(yytext); return NUM_REAL;}
 
 [_a-zA-Z][_a-zA-Z0-9]* {
     if (strlen(yytext) > 255) {
