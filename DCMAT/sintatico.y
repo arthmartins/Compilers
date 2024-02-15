@@ -1,18 +1,13 @@
 %{
 
 #include <stdio.h>
+#include "comandos.hh"
 extern int yylex();
 extern char* yytext;
-extern int entradas;
-extern int linha;
-extern int coluna;
 extern int yychar;
-extern int linha_anterior;
-extern int coluna_anterior;
-extern char erro_linha[2048];
-extern void pick_erro_linha(int linha);
 
-void yyerror(void *s); 
+
+extern void yyerror(char*); 
 
 %}
 
@@ -73,10 +68,10 @@ void yyerror(void *s);
 
 %%
 
-Programa: Comandos {}
-        | ManipulacaoSimbolos {}
-        | AvaliacaoExpressao {}
-        | ApresentacaoResultados {}
+Programa: Comandos {printf(">");}
+        | ManipulacaoSimbolos {printf(">");}
+        | AvaliacaoExpressao {printf(">");}
+        | ApresentacaoResultados {printf(">");}
 
 
 Comandos: OnlyComandos {}
@@ -84,9 +79,10 @@ Comandos: OnlyComandos {}
 
 OnlyComandos: SHOW ComplementoSettings {}
             | RESET ComplementoSettings {}
-            | QUIT {}
+            | QUIT { exit(0);}
             | SET FuncoesSet SEMICOLON {}
-            | ABOUT SEMICOLON {}
+            | ABOUT SEMICOLON { printAbout();}
+            | SET CONNECT_DOTS ONorOFF SEMICOLON {}
 
 ComplementoSettings: SETTINGS SEMICOLON {}
 
@@ -95,9 +91,6 @@ FuncoesSet: H_VIEW ValoresEscala {}
             | AXIS ONorOFF {}
 
 ValoresEscala: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat {}
-
-ValorIntOrFloat: NUM_INTEGER {}
-        |   NUM_REAL {}
 
 Sinal: PLUS {}
     | MINUS {}
@@ -119,13 +112,13 @@ Grafico: PLOT InfoPlot SEMICOLON {}
 InfoPlot: L_PAREN FuncaoPlot R_PAREN {}
         | {}
 
-FuncaoPlot: Funcoes InsideFuncoes{}
+FuncaoPlot: Funcoes L_PAREN InsideFuncoes R_PAREN {}
 
-InsideFuncoes: L_PAREN InsideFuncoes R_PAREN{}
-            | Sinal X InsideFuncoes{}
+InsideFuncoes: L_PAREN InsideFuncoes R_PAREN InsideFuncoes{}
+            | X InsideFuncoes{}
             | OperadoresBinarios InsideFuncoes{}
-            | Sinal Constantes InsideFuncoes{}
-            | Sinal ValorIntOrFloat InsideFuncoes{}
+            | Constantes InsideFuncoes{}
+            | ValorIntOrFloat InsideFuncoes{}
             | {}
 
 // --------------------------------------------------------
@@ -148,12 +141,12 @@ Sum: SUM L_PAREN IDENTIFIER COMMA NUM_INTEGER COLON NUM_INTEGER COMMA Expressao 
 
 // --------------------------------------------------------
 
-Matrix: MATRIX CreateMatrix {}
+Matrix: MATRIX EQUAL CreateMatrix {}
       | SHOW MATRIX SEMICOLON {}
       | SOLVE DETERMINANT SEMICOLON {}
       | SOLVE LINEAR_SYSTEM SEMICOLON {}
 
-CreateMatrix: EQUAL L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON {}
+CreateMatrix: L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON {}
 
 CreateMatrixAux: L_SQUARE_BRACKET Sinal ValorIntOrFloat RepeatValuesMatrixOne R_SQUARE_BRACKET RepeatValuesMatrixTwo{}
 
@@ -171,9 +164,9 @@ ManipulacaoSimbolos: AtribuicaoValores {}
                     | SHOW SYMBOLS SEMICOLON {}
                     
 
-AtribuicaoValores: IDENTIFIER COLON EQUAL Expressao SEMICOLON {}
+AtribuicaoValores: IDENTIFIER ATRIBUTE Expressao SEMICOLON {}
 
-AtribuicaoMatrizes: IDENTIFIER COLON CreateMatrix {}
+AtribuicaoMatrizes: IDENTIFIER ATRIBUTE CreateMatrix {}
 
 // -----------------------    3    --------------------------------
 
@@ -182,7 +175,7 @@ AvaliacaoExpressao: AvaExpressoesMatematicas {}
 AvaExpressoesMatematicas: Expressao SemicolonOpcional {}
 
 SemicolonOpcional: SEMICOLON {}
-                |   {}
+                | {}
 
 // --------------------------  4   -----------------------------
 
@@ -190,13 +183,14 @@ ApresentacaoResultados: SET FLOAT PRECISION NUM_INTEGER SEMICOLON {}
 
 
 
-Expressao: Delimitadores Expressao Delimitadores {}
-         | Funcoes L_PAREN Expressao R_PAREN Expressao {}
-         | X Expressao {}
-         | OperadoresBinarios Expressao {}
-         | Constantes Expressao {}
-         | ValorIntOrFloat Expressao {}
-         | IDENTIFIER Expressao {}
+Expressao: Delimitadores Expressao_aux Delimitadores {}
+
+Expressao_aux: Funcoes L_PAREN Expressao_aux R_PAREN Expressao {}
+         | X Expressao_aux {}
+         | OperadoresBinarios Expressao_aux {}
+         | Constantes Expressao_aux {}
+         | ValorIntOrFloat Expressao_aux {}
+         | IDENTIFIER Expressao_aux {}
          | {}
 
 Delimitadores: L_PAREN {}
@@ -218,43 +212,25 @@ OperadoresBinarios: PLUS {}
 Constantes: PI {}
             | E {}
 
+ValorIntOrFloat: NUM_INTEGER {}
+        |   NUM_REAL {}
+
 
 
 %%
 
-void yyerror(void *s) {
+void yyerror(char *s) {
 	
-    //linha = linha_anterior;
-    //coluna = coluna_anterior;
-    //pick_erro_linha(linha);
-    if(entradas > 0)
-        printf("\n");
-     if (yychar == 0) {
-
-                pick_erro_linha(linha_anterior);
-                printf("error:syntax:%d:%d: expected declaration or statement at end of input\n%s", linha_anterior, coluna_anterior, erro_linha);
-                for(int i = 0; i < coluna_anterior -1; i++) {
-                    printf(" ");
-                }
-                printf("^");
-        } else {
-            pick_erro_linha(linha);
-	        coluna -= strlen(yytext);
-                printf("error:syntax:%d:%d: %s\n%s", linha, coluna, yytext, erro_linha);
-                for(int i = 0; i < coluna -1; i++) {
-                    printf(" ");
-                }
-                printf("^");
-        }
+        printf("Deu erro");
 	exit(0);
     
 }
 
 int main(int argc, char** argv)
 {
+    printf(">");
     yyparse();
-    if(entradas > 0)
-        printf("\n");
+    
     
     printf("SUCCESSFUL COMPILATION.");
     return 0;

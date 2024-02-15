@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdio.h>
 #include <string.h>
-#include <sintatico.tab.h>
+#include <sintatico.yy.hh>
 extern YYSTYPE yylval;
 int entradas = 0;
 int linha = 1;
@@ -30,7 +30,7 @@ void pick_erro_linha(int linha);
 
 "about"          { coluna += strlen(yytext); return ABOUT; }
 "float"          { coluna += strlen(yytext); return FLOAT; }
-"pi" || "pI" || "Pi" || "PI"            { coluna += strlen(yytext); return PI; }
+"pi"|"pI"|"Pi"|"PI"           { coluna += strlen(yytext); return PI; }
 "settings"       { coluna += strlen(yytext); return SETTINGS; }
 
 "abs"            { coluna += strlen(yytext); return ABS; }
@@ -58,7 +58,7 @@ void pick_erro_linha(int linha);
 "rpn"            { coluna += strlen(yytext); return RPN; }
 "tan"            { coluna += strlen(yytext); return TAN; }
 
-"e" || "E"              { coluna += strlen(yytext); return E; }
+"e"|"E"              { coluna += strlen(yytext); return E; }
 "off"            { coluna += strlen(yytext); return OFF; }
 "sen"            { coluna += strlen(yytext); return SEN; }
 "v_view"         { coluna += strlen(yytext); return V_VIEW; }
@@ -89,6 +89,17 @@ void pick_erro_linha(int linha);
 [0-9]+       {  coluna += strlen(yytext); return NUM_INTEGER;}
 [0-9]+"."[0-9]+    {   coluna += strlen(yytext); return NUM_REAL;}
 
+[ \r\t\a] {coluna+= strlen(yytext);}
+\f {} 
+\v {}
+\b {}
+\\ {}
+\0 {}
+
+"//".*\n { linha_anterior= linha; coluna_anterior= coluna; linha++;}
+"/*" { save_coluna = coluna; coluna += strlen(yytext); BEGIN(BLOCK_COMMENT);}
+\n {linha_anterior= linha; coluna_anterior= coluna-1;linha++;  coluna = 1; }
+
 [_a-zA-Z][_a-zA-Z0-9]* {
     if (strlen(yytext) > 255) {
         printf("error:lexical:%d:%d: identifier too long", linha, coluna);
@@ -102,31 +113,6 @@ void pick_erro_linha(int linha);
 
 }
 
-
-[ \r\t\a] {coluna+= strlen(yytext);}
-\f {} 
-\v {}
-\b {}
-\\ {}
-\0 {}
-
-"//".*\n { linha_anterior= linha; coluna_anterior= coluna; linha++;}
-"/*" { save_coluna = coluna; coluna += strlen(yytext); BEGIN(BLOCK_COMMENT);}
-\n {linha_anterior= linha; coluna_anterior= coluna-1;linha++;  coluna = 1; }
-
-
-<BLOCK_COMMENT>{
-
-"/"*"*/" {linha+=block_counter;block_counter = 0; coluna += block_coluna_counter;
-       block_coluna_counter=0; coluna+=strlen(yytext); BEGIN(INITIAL); }
-"/*" {print_newline(entradas); entradas++; printf("warning:%d:%d: '/*' within block comment",linha+block_counter,save_coluna+block_coluna_counter); block_coluna_counter+= strlen(yytext);}
-
-\n {block_counter++; block_coluna_counter =0;}
-<<EOF>> {print_newline(entradas); printf("error:lexical:%d:%d: unterminated comment", linha, save_coluna); exit(0); BEGIN(INITIAL);}
-. {block_coluna_counter+= strlen(yytext);}
-
-}
-
 %%
 
 void pick_erro_linha(int linha)
@@ -137,9 +123,3 @@ void pick_erro_linha(int linha)
     }
 }
 
-void print_newline(int entradas){
-    if(entradas > 0)
-    {
-        printf("\n");
-    }
-}
