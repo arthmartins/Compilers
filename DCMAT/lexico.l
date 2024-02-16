@@ -21,93 +21,82 @@ void pick_erro_linha(int linha);
 %}
 
 
-%x BLOCK_COMMENT
-
 
 %%
 
 <INITIAL>{
 
-"about"          { coluna += strlen(yytext); return ABOUT; }
-"float"          { coluna += strlen(yytext); return FLOAT; }
-"pi"|"pI"|"Pi"|"PI"           { coluna += strlen(yytext); return PI; }
-"settings"       { coluna += strlen(yytext); return SETTINGS; }
+"about"          { return ABOUT; }
+"float"          { return FLOAT; }
+"pi"|"pI"|"Pi"|"PI"           { return PI; }
+"settings"       { return SETTINGS; }
 
-"abs"            { coluna += strlen(yytext); return ABS; }
-"h_view"         { coluna += strlen(yytext); return H_VIEW; }
-"plot"           { coluna += strlen(yytext); return PLOT; }
-"show"           { coluna += strlen(yytext); return SHOW; }
+"abs"            { return ABS; }
+"h_view"         { return H_VIEW; }
+"plot"           { return PLOT; }
+"show"           { return SHOW; }
 
-"axis"           { coluna += strlen(yytext); return AXIS; }
-"integral_steps" { coluna += strlen(yytext); return INTEGRAL_STEPS; }
-"precision"      { coluna += strlen(yytext); return PRECISION; }
-"solve"          { coluna += strlen(yytext); return SOLVE; }
+"axis"           { return AXIS; }
+"integral_steps" { return INTEGRAL_STEPS; }
+"precision"      { return PRECISION; }
+"solve"          { return SOLVE; }
 
-"connect_dots"   { coluna += strlen(yytext); return CONNECT_DOTS; }
-"integrate"      { coluna += strlen(yytext); return INTEGRATE; }
-"quit"           { coluna += strlen(yytext); return QUIT; }
-"sum"            { coluna += strlen(yytext); return SUM; }
+"connect_dots"   { return CONNECT_DOTS; }
+"integrate"      { return INTEGRATE; }
+"quit"           { return QUIT; }
+"sum"            { return SUM; }
 
-"cos"            { coluna += strlen(yytext); return COS; }
-"linear_system"  { coluna += strlen(yytext); return LINEAR_SYSTEM; }
-"reset"          { coluna += strlen(yytext); return RESET; }
-"symbols"        { coluna += strlen(yytext); return SYMBOLS; }
+"cos"            { return COS; }
+"linear_system"  { return LINEAR_SYSTEM; }
+"reset"          { return RESET; }
+"symbols"        { return SYMBOLS; }
 
-"determinant"    { coluna += strlen(yytext); return DETERMINANT; }
-"matrix"         { coluna += strlen(yytext); return MATRIX; }
-"rpn"            { coluna += strlen(yytext); return RPN; }
-"tan"            { coluna += strlen(yytext); return TAN; }
+"determinant"    { return DETERMINANT; }
+"matrix"         { return MATRIX; }
+"rpn"            { return RPN; }
+"tan"            { return TAN; }
 
-"e"|"E"              { coluna += strlen(yytext); return E; }
-"off"            { coluna += strlen(yytext); return OFF; }
-"sen"            { coluna += strlen(yytext); return SEN; }
-"v_view"         { coluna += strlen(yytext); return V_VIEW; }
+"e"|"E"              { return E; }
+"off"            { return OFF; }
+"sen"            { return SEN; }
+"v_view"         { return V_VIEW; }
 
-"erase"          { coluna += strlen(yytext); return ERASE; }
-"on"             { coluna += strlen(yytext); return ON; }
-"set"            { coluna += strlen(yytext); return SET; }
-"x"              { coluna += strlen(yytext); return X; }
+"erase"          { return ERASE; }
+"on"             { return ON; }
+"set"            { return SET; }
+"x"              {  return X; }
 
-"+"          {  coluna += strlen(yytext); return PLUS;}
-"-"          {  coluna += strlen(yytext); return MINUS;}
-"*"          {  coluna += strlen(yytext); return MULTIPLY;}
-"/"          {  coluna += strlen(yytext); return DIV;}
-"%"          {  coluna += strlen(yytext); return REMAINDER;}
-"^"          {  coluna += strlen(yytext); return POW;}
+"+"          {  return PLUS;}
+"-"          {  return MINUS;}
+"*"          {  return MULTIPLY;}
+"/"          {   return DIV;}
+"%"          {  return REMAINDER;}
+"^"          {  return POW;}
 
 
-";"          {  coluna += strlen(yytext); return SEMICOLON;}
-","          {  coluna += strlen(yytext); return COMMA;}
-":"          {  coluna += strlen(yytext); return COLON;}
-"("          {  coluna += strlen(yytext); return L_PAREN;}
-")"          {  coluna += strlen(yytext); return R_PAREN;}
-"["          {  coluna += strlen(yytext); return L_SQUARE_BRACKET;}
-"]"          {  coluna += strlen(yytext); return R_SQUARE_BRACKET;}
-"="          {  coluna += strlen(yytext); return EQUAL;}
-":="          {  coluna += strlen(yytext); return ATRIBUTE;}
+";"          {  return SEMICOLON;}
+","          {  return COMMA;}
+":"          {  return COLON;}
+"("          {  return L_PAREN;}
+")"          {  return R_PAREN;}
+"["          {  return L_SQUARE_BRACKET;}
+"]"          {  return R_SQUARE_BRACKET;}
+"="          {  return EQUAL;}
+":="          {  return ATRIBUTE;}
 
-[0-9]+       {  coluna += strlen(yytext); return NUM_INTEGER;}
-[0-9]+"."[0-9]+    {   coluna += strlen(yytext); return NUM_REAL;}
+[0-9]+       {  yylval.inteiro = atoi(yytext); return NUM_INTEGER;}
+[0-9]+"."[0-9]+    { yylval.real = atof(yytext); return NUM_REAL;}
 
-[ \r\t\a] {coluna+= strlen(yytext);}
+[ \r\t\a] {}
 \f {} 
 \v {}
 \b {}
 \\ {}
 \0 {}
 
-"//".*\n { linha_anterior= linha; coluna_anterior= coluna; linha++;}
-"/*" { save_coluna = coluna; coluna += strlen(yytext); BEGIN(BLOCK_COMMENT);}
-\n {linha_anterior= linha; coluna_anterior= coluna-1;linha++;  coluna = 1; }
+\n { }
 
-[_a-zA-Z][_a-zA-Z0-9]* {
-    if (strlen(yytext) > 255) {
-        printf("error:lexical:%d:%d: identifier too long", linha, coluna);
-        exit(0);
-    }else{
-    coluna += strlen(yytext); return IDENTIFIER;
-    }
-}
+[_a-zA-Z][_a-zA-Z0-9]* {return IDENTIFIER; }
 
 . { printf("error:lexical:%d:%d: %s", linha, coluna, yytext); exit(0);} 
 
@@ -115,11 +104,4 @@ void pick_erro_linha(int linha);
 
 %%
 
-void pick_erro_linha(int linha)
-{
-    fseek(stdin, 0, SEEK_SET);
-    for(int i = 0; i < linha; i++) {
-        fgets(erro_linha, 1000, stdin);
-    }
-}
 

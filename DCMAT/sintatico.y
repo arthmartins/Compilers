@@ -2,14 +2,25 @@
 
 #include <stdio.h>
 #include "comandos.hh"
+#define QUIT_VALUE 329179
+#define CONTINUE_VALUE 0
+
 extern int yylex();
 extern char* yytext;
 extern int yychar;
+extern void yylex_destroy(void);
 
 
 extern void yyerror(char*); 
 
 %}
+
+%union{
+int inteiro;
+char *string;
+float real; 
+}
+
 
 %token IDENTIFIER
 %token ABOUT
@@ -63,41 +74,50 @@ extern void yyerror(char*);
 %token NUM_REAL
 
 
-
 %start Programa
+
+%type <inteiro> Sinal NUM_INTEGER ONorOFF
+//%type <string> IDENTIFIER
+%type <real> NUM_REAL ValorIntOrFloat
 
 %%
 
-Programa: Comandos {printf(">");}
-        | ManipulacaoSimbolos {printf(">");}
-        | AvaliacaoExpressao {printf(">");}
-        | ApresentacaoResultados {printf(">");}
+Programa: Comandos {}
+        | ManipulacaoSimbolos {}
+        | AvaliacaoExpressao {}
 
 
 Comandos: OnlyComandos {}
         | ComandosPlus {}
 
-OnlyComandos: SHOW ComplementoSettings {}
-            | RESET ComplementoSettings {}
-            | QUIT { exit(0);}
-            | SET FuncoesSet SEMICOLON {}
-            | ABOUT SEMICOLON { printAbout();}
-            | SET CONNECT_DOTS ONorOFF SEMICOLON {}
+OnlyComandos: SHOW SETTINGS SEMICOLON { showSettings(); return CONTINUE_VALUE;}
+            | RESET SETTINGS SEMICOLON { setDefaultValues(); return CONTINUE_VALUE;}
+            | QUIT { return QUIT_VALUE;}
+            | SET FuncoesSet SEMICOLON {return CONTINUE_VALUE;}
+            | ABOUT SEMICOLON { printAbout(); return CONTINUE_VALUE;}
+            
 
-ComplementoSettings: SETTINGS SEMICOLON {}
 
-FuncoesSet: H_VIEW ValoresEscala {}
-            | V_VIEW ValoresEscala {}
-            | AXIS ONorOFF {}
+FuncoesSet: H_VIEW Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat { setH_view($2*$3, $5*$6); }
+            | V_VIEW Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat {setV_view($2*$3, $5*$6);}
+            | AXIS ONorOFF {setAxis($2);}
+            | ERASE PLOT ONorOFF {setErase($3);}
+            | CONNECT_DOTS ONorOFF {setConnectDots($2);}
+            | FLOAT PRECISION NUM_INTEGER {setFloatPrecision($3);}
+            | INTEGRAL_STEPS NUM_INTEGER {setIntegralSteps($2);}
 
-ValoresEscala: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat {}
 
-Sinal: PLUS {}
-    | MINUS {}
-    | {}
+ValorIntOrFloat: NUM_INTEGER {$$ = $1;}
+        |   NUM_REAL {$$ = $1;}
 
-ONorOFF: ON {}
-        | OFF{}
+Sinal: PLUS {$$ = 1;}
+    | MINUS {$$ = -1;}
+    | {$$ = 1;}
+
+
+
+ONorOFF: ON {$$ = 1;}
+        | OFF{$$ = 0;}
 
 ComandosPlus: Grafico {}
             | FuncaoRpn {}
@@ -106,13 +126,13 @@ ComandosPlus: Grafico {}
             | Matrix {}
 
 // --------------------------------------------------------
-Grafico: PLOT InfoPlot SEMICOLON {}
-        | SET ERASE PLOT ONorOFF {}
+Grafico: PLOT InfoPlot SEMICOLON {return CONTINUE_VALUE;}
 
-InfoPlot: L_PAREN FuncaoPlot R_PAREN {}
+
+InfoPlot: L_PAREN FuncaoPlot R_PAREN {return CONTINUE_VALUE;}
         | {}
 
-FuncaoPlot: Funcoes L_PAREN InsideFuncoes R_PAREN {}
+FuncaoPlot: Funcoes L_PAREN InsideFuncoes R_PAREN {return CONTINUE_VALUE;}
 
 InsideFuncoes: L_PAREN InsideFuncoes R_PAREN InsideFuncoes{}
             | X InsideFuncoes{}
@@ -123,12 +143,11 @@ InsideFuncoes: L_PAREN InsideFuncoes R_PAREN InsideFuncoes{}
 
 // --------------------------------------------------------
 
-FuncaoRpn: RPN L_PAREN Expressao R_PAREN SEMICOLON {}
+FuncaoRpn: RPN L_PAREN Expressao R_PAREN SEMICOLON {return CONTINUE_VALUE;}
 
 // --------------------------------------------------------
 
-Integral: SET INTEGRAL_STEPS NUM_INTEGER SEMICOLON {}
-        | INTEGRATE L_PAREN IntegralAux R_PAREN SEMICOLON {}
+Integral: INTEGRATE L_PAREN IntegralAux R_PAREN SEMICOLON {return CONTINUE_VALUE;}
 
 IntegralAux: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat COMMA Funcoes InsideFuncoes{} // isso pode dar certo
 
@@ -137,16 +156,16 @@ IntegralAux: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat COMMA Funcoes Ins
 // --------------------------------------------------------
 
 //REVER ISSO AQUI!!!!!!!!!!! NO LUGAR DO X DEVE SER UMA VARIAVEL
-Sum: SUM L_PAREN IDENTIFIER COMMA NUM_INTEGER COLON NUM_INTEGER COMMA Expressao R_PAREN SEMICOLON {}
+Sum: SUM L_PAREN IDENTIFIER COMMA NUM_INTEGER COLON NUM_INTEGER COMMA Expressao R_PAREN SEMICOLON {return CONTINUE_VALUE;}
 
 // --------------------------------------------------------
 
 Matrix: MATRIX EQUAL CreateMatrix {}
-      | SHOW MATRIX SEMICOLON {}
-      | SOLVE DETERMINANT SEMICOLON {}
-      | SOLVE LINEAR_SYSTEM SEMICOLON {}
+      | SHOW MATRIX SEMICOLON {return CONTINUE_VALUE;}
+      | SOLVE DETERMINANT SEMICOLON {return CONTINUE_VALUE;}
+      | SOLVE LINEAR_SYSTEM SEMICOLON {return CONTINUE_VALUE;}
 
-CreateMatrix: L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON {}
+CreateMatrix: L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON {return CONTINUE_VALUE;}
 
 CreateMatrixAux: L_SQUARE_BRACKET Sinal ValorIntOrFloat RepeatValuesMatrixOne R_SQUARE_BRACKET RepeatValuesMatrixTwo{}
 
@@ -160,11 +179,11 @@ RepeatValuesMatrixTwo: COMMA L_SQUARE_BRACKET Sinal ValorIntOrFloat RepeatValues
 
 ManipulacaoSimbolos: AtribuicaoValores {}
                     | AtribuicaoMatrizes {}
-                    | IDENTIFIER SEMICOLON {} // mostrar valor de símbolos 
-                    | SHOW SYMBOLS SEMICOLON {}
+                    | IDENTIFIER SEMICOLON {return CONTINUE_VALUE;} // mostrar valor de símbolos 
+                    | SHOW SYMBOLS SEMICOLON {return CONTINUE_VALUE;}
                     
 
-AtribuicaoValores: IDENTIFIER ATRIBUTE Expressao SEMICOLON {}
+AtribuicaoValores: IDENTIFIER ATRIBUTE Expressao SEMICOLON {return CONTINUE_VALUE;}
 
 AtribuicaoMatrizes: IDENTIFIER ATRIBUTE CreateMatrix {}
 
@@ -174,12 +193,8 @@ AvaliacaoExpressao: AvaExpressoesMatematicas {}
 
 AvaExpressoesMatematicas: Expressao SemicolonOpcional {}
 
-SemicolonOpcional: SEMICOLON {}
+SemicolonOpcional: SEMICOLON {return CONTINUE_VALUE;}
                 | {}
-
-// --------------------------  4   -----------------------------
-
-ApresentacaoResultados: SET FLOAT PRECISION NUM_INTEGER SEMICOLON {}
 
 
 
@@ -193,27 +208,26 @@ Expressao_aux: Funcoes L_PAREN Expressao_aux R_PAREN Expressao {}
          | IDENTIFIER Expressao_aux {}
          | {}
 
-Delimitadores: L_PAREN {}
-            | R_PAREN {}
+Delimitadores: L_PAREN {return CONTINUE_VALUE;}
+            | R_PAREN {return CONTINUE_VALUE;}
             | {}
 
-Funcoes: COS {}
-        | SEN {}
-        | TAN {}
-        | ABS {}
+Funcoes: COS {return CONTINUE_VALUE;}
+        | SEN {return CONTINUE_VALUE;}
+        | TAN {return CONTINUE_VALUE;}
+        | ABS {return CONTINUE_VALUE;}
 
-OperadoresBinarios: PLUS {}
-                    | MINUS {}
-                    | MULTIPLY {}
-                    | DIV {}
-                    | POW {}
-                    | REMAINDER {}
+OperadoresBinarios: PLUS {return CONTINUE_VALUE;}
+                    | MINUS {return CONTINUE_VALUE;}
+                    | MULTIPLY {return CONTINUE_VALUE;}
+                    | DIV {return CONTINUE_VALUE;}
+                    | POW {return CONTINUE_VALUE;}
+                    | REMAINDER {return CONTINUE_VALUE;}
 
-Constantes: PI {}
-            | E {}
+Constantes: PI {return CONTINUE_VALUE;}
+            | E {return CONTINUE_VALUE;}
 
-ValorIntOrFloat: NUM_INTEGER {}
-        |   NUM_REAL {}
+
 
 
 
@@ -221,16 +235,21 @@ ValorIntOrFloat: NUM_INTEGER {}
 
 void yyerror(char *s) {
 	
-        printf("Deu erro");
+        printf("Deu erro %s", yytext);
 	exit(0);
     
 }
 
 int main(int argc, char** argv)
 {
+        
+    setDefaultValues();
+    int input = 0;
+
+    while(input != QUIT_VALUE){
     printf(">");
-    yyparse();
-    
+    input  = yyparse();
+    } 
     
     printf("SUCCESSFUL COMPILATION.");
     return 0;
