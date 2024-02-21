@@ -3,6 +3,7 @@
 %{
 #include <stdio.h>
 #include <stdio.h>
+#include <iostream>
 #include <string.h>
 #include <sintatico.yy.hh>
 extern YYSTYPE yylval;
@@ -96,9 +97,9 @@ void pick_erro_linha(int linha);
 
 \n { }
 
-[_a-zA-Z][_a-zA-Z0-9]* {return IDENTIFIER; }
+[_a-zA-Z][_a-zA-Z0-9]* {yylval.string_id = strdup(yytext); return IDENTIFIER; }
 
-. { printf("error:lexical:%d:%d: %s", linha, coluna, yytext); exit(0);} 
+. { printf("\nInvalid Symbol: %s\n\n", yytext); return 1;} 
 
 }
 

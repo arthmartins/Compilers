@@ -12,6 +12,11 @@
 #define ERASE_PLOT_DEFAULT true
 #define CONNECT_DOTS_DEFAULT false
 
+#include <vector>
+#include <list>
+#include <iostream>
+#include "hash.hh"
+
 void setDefaultValues();
 
 void showSettings();
@@ -31,5 +36,18 @@ void setConnectDots(int valor);
 void setFloatPrecision(int valor);
 
 void setIntegralSteps(int valor);
+
+std::vector<std::vector<float>> createMatriz(std::list<float>& listaMatriz, std::list<int>& ElementsPLinha, int numerodeColunas);
+
+void showMatriz();
+
+void determinanteMatriz();
+
+void solveLinearSystem() ;
+
+void printValorSimbolo(std::string name, HashTable hash); 
+
+void printMatriz(std::vector<std::vector<float>> matriz_aux);
+
 
 #endif

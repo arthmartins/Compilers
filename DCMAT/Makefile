@@ -11,6 +11,7 @@ SINTATICO = sintatico.y
 CC_FLAGS = -std=c++11				\
 		   -I.						\
 		   -w
+			 
 		   
 
 $(PROGRAMA): $(LEXICO) $(SINTATICO)

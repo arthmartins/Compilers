@@ -2,6 +2,12 @@
 
 #include <stdio.h>
 #include "comandos.hh"
+#include <list>
+#include "hash.hh"
+#include <iostream>
+#include <vector>
+#include <cmath>
+
 #define QUIT_VALUE 329179
 #define CONTINUE_VALUE 0
 
@@ -10,6 +16,18 @@ extern char* yytext;
 extern int yychar;
 extern void yylex_destroy(void);
 
+std::vector<std::vector<float>> matriz_global;
+
+HashTable hashTable;
+
+std::list<float> listMatriz;
+std::list<int> elemtsPlinha;
+
+int elementosLinha = 0;
+int maisElementosLinha = 0;
+
+int sinal = 1;
+
 
 extern void yyerror(char*); 
 
@@ -17,7 +35,7 @@ extern void yyerror(char*);
 
 %union{
 int inteiro;
-char *string;
+char* string_id;
 float real; 
 }
 
@@ -75,16 +93,16 @@ float real;
 
 
 %start Programa
-
-%type <inteiro> Sinal NUM_INTEGER ONorOFF
-//%type <string> IDENTIFIER
-%type <real> NUM_REAL ValorIntOrFloat
+ 
+%type <inteiro> Sinal NUM_INTEGER ONorOFF RepeatValuesMatrixOne  OperadoresBinarios
+%type <string_id> IDENTIFIER
+%type <real> NUM_REAL ValorIntOrFloat Expressao_aux Expressao Constantes
 
 %%
 
-Programa: Comandos {}
-        | ManipulacaoSimbolos {}
-        | AvaliacaoExpressao {}
+Programa: Comandos {return CONTINUE_VALUE;}
+        | ManipulacaoSimbolos {return CONTINUE_VALUE;}
+        | AvaliacaoExpressao {return CONTINUE_VALUE;}
 
 
 Comandos: OnlyComandos {}
@@ -103,7 +121,7 @@ FuncoesSet: H_VIEW Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat { setH_view
             | AXIS ONorOFF {setAxis($2);}
             | ERASE PLOT ONorOFF {setErase($3);}
             | CONNECT_DOTS ONorOFF {setConnectDots($2);}
-            | FLOAT PRECISION NUM_INTEGER {setFloatPrecision($3);}
+            | FLOAT PRECISION Sinal NUM_INTEGER {setFloatPrecision($3*$4);}
             | INTEGRAL_STEPS NUM_INTEGER {setIntegralSteps($2);}
 
 
@@ -159,33 +177,40 @@ IntegralAux: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat COMMA Funcoes Ins
 Sum: SUM L_PAREN IDENTIFIER COMMA NUM_INTEGER COLON NUM_INTEGER COMMA Expressao R_PAREN SEMICOLON {return CONTINUE_VALUE;}
 
 // --------------------------------------------------------
+Matrix: MATRIX EQUAL ChamaCreateMatrix {}
+        | SHOW MATRIX SEMICOLON { showMatriz(); return CONTINUE_VALUE;}
+      | SOLVE DETERMINANT SEMICOLON { determinanteMatriz(); return CONTINUE_VALUE;}
+      | SOLVE LINEAR_SYSTEM SEMICOLON { solveLinearSystem();  return CONTINUE_VALUE;}
 
-Matrix: MATRIX EQUAL CreateMatrix {}
-      | SHOW MATRIX SEMICOLON {return CONTINUE_VALUE;}
-      | SOLVE DETERMINANT SEMICOLON {return CONTINUE_VALUE;}
-      | SOLVE LINEAR_SYSTEM SEMICOLON {return CONTINUE_VALUE;}
+ChamaCreateMatrix: CreateMatrix { matriz_global = createMatriz(listMatriz,elemtsPlinha,maisElementosLinha); elementosLinha = 0; maisElementosLinha = 0;
+ /* destruir listas aqui */ }
+      
 
-CreateMatrix: L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON {return CONTINUE_VALUE;}
+CreateMatrix: L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON {}
 
-CreateMatrixAux: L_SQUARE_BRACKET Sinal ValorIntOrFloat RepeatValuesMatrixOne R_SQUARE_BRACKET RepeatValuesMatrixTwo{}
+CreateMatrixAux: L_SQUARE_BRACKET Sinal ValorIntOrFloat { elementosLinha++; listMatriz.push_back($2*$3); } RepeatValuesMatrixOne 
+                                R_SQUARE_BRACKET { elemtsPlinha.push_back(elementosLinha); maisElementosLinha = (elementosLinha > maisElementosLinha) ? elementosLinha : maisElementosLinha;
+                                         elementosLinha = 0; } RepeatValuesMatrixTwo{ }
 
-RepeatValuesMatrixOne: COMMA Sinal ValorIntOrFloat RepeatValuesMatrixOne {}
+RepeatValuesMatrixOne: COMMA Sinal ValorIntOrFloat {elementosLinha++; listMatriz.push_back($2*$3); } RepeatValuesMatrixOne {}
                     | {}
 
-RepeatValuesMatrixTwo: COMMA L_SQUARE_BRACKET Sinal ValorIntOrFloat RepeatValuesMatrixOne R_SQUARE_BRACKET RepeatValuesMatrixTwo {}
+RepeatValuesMatrixTwo: COMMA L_SQUARE_BRACKET Sinal ValorIntOrFloat {elementosLinha++; listMatriz.push_back($3*$4);  } RepeatValuesMatrixOne 
+                                R_SQUARE_BRACKET{ elemtsPlinha.push_back(elementosLinha); maisElementosLinha = (elementosLinha > maisElementosLinha) ? elementosLinha : maisElementosLinha;
+                                         elementosLinha = 0; } RepeatValuesMatrixTwo {}
                      | {}           
 
 // ----------------   2   ----------------------------------------
 
-ManipulacaoSimbolos: AtribuicaoValores {}
+ManipulacaoSimbolos: AtribuicaoValores {return CONTINUE_VALUE;}
                     | AtribuicaoMatrizes {}
-                    | IDENTIFIER SEMICOLON {return CONTINUE_VALUE;} // mostrar valor de símbolos 
-                    | SHOW SYMBOLS SEMICOLON {return CONTINUE_VALUE;}
+                    | IDENTIFIER SEMICOLON { printValorSimbolo($1, hashTable); } // mostrar valor de símbolos 
+                    | SHOW SYMBOLS SEMICOLON { hashTable.printAll(); return CONTINUE_VALUE;}
                     
 
-AtribuicaoValores: IDENTIFIER ATRIBUTE Expressao SEMICOLON {return CONTINUE_VALUE;}
+AtribuicaoValores: IDENTIFIER ATRIBUTE Expressao SEMICOLON { hashTable.insert($1,$3);}
 
-AtribuicaoMatrizes: IDENTIFIER ATRIBUTE CreateMatrix {}
+AtribuicaoMatrizes: IDENTIFIER ATRIBUTE ChamaCreateMatrix {hashTable.insert($1,matriz_global);}
 
 // -----------------------    3    --------------------------------
 
@@ -198,34 +223,35 @@ SemicolonOpcional: SEMICOLON {return CONTINUE_VALUE;}
 
 
 
-Expressao: Delimitadores Expressao_aux Delimitadores {}
+Expressao: Delimitadores Expressao_aux Delimitadores {$$ = $2;}
 
 Expressao_aux: Funcoes L_PAREN Expressao_aux R_PAREN Expressao {}
          | X Expressao_aux {}
-         | OperadoresBinarios Expressao_aux {}
-         | Constantes Expressao_aux {}
-         | ValorIntOrFloat Expressao_aux {}
+         | OperadoresBinarios {sinal = $1;} Expressao_aux {}
+         | Constantes Expressao_aux {$$ = $1;}
+         | ValorIntOrFloat Expressao_aux {$$ = $1*sinal; sinal = 1;}
          | IDENTIFIER Expressao_aux {}
          | {}
 
-Delimitadores: L_PAREN {return CONTINUE_VALUE;}
-            | R_PAREN {return CONTINUE_VALUE;}
+Delimitadores: L_PAREN {}
+            | R_PAREN {}
             | {}
 
-Funcoes: COS {return CONTINUE_VALUE;}
-        | SEN {return CONTINUE_VALUE;}
-        | TAN {return CONTINUE_VALUE;}
-        | ABS {return CONTINUE_VALUE;}
+Funcoes: COS {}
+        | SEN {}
+        | TAN {}
+        | ABS {}
 
-OperadoresBinarios: PLUS {return CONTINUE_VALUE;}
-                    | MINUS {return CONTINUE_VALUE;}
-                    | MULTIPLY {return CONTINUE_VALUE;}
-                    | DIV {return CONTINUE_VALUE;}
-                    | POW {return CONTINUE_VALUE;}
-                    | REMAINDER {return CONTINUE_VALUE;}
+OperadoresBinarios: PLUS {$$ = 1;}
+                    | MINUS {$$ = -1;}
+                    | MULTIPLY {}
+                    | DIV {}
+                    | POW {}
+                    | REMAINDER {}
+                    
 
-Constantes: PI {return CONTINUE_VALUE;}
-            | E {return CONTINUE_VALUE;}
+Constantes: PI {$$ = M_PI;}
+            | E {$$ = M_E;}
 
 
 
@@ -235,14 +261,13 @@ Constantes: PI {return CONTINUE_VALUE;}
 
 void yyerror(char *s) {
 	
-        printf("Deu erro %s", yytext);
-	exit(0);
-    
+        printf("\nSYNTAX ERROR: [%s]\n\n", yytext);
+	
 }
 
 int main(int argc, char** argv)
 {
-        
+    
     setDefaultValues();
     int input = 0;
 
