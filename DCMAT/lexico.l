@@ -1,23 +1,16 @@
 %option noyywrap
 
 %{
+#include "ast.hh"
 #include <stdio.h>
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
 #include <sintatico.yy.hh>
-extern YYSTYPE yylval;
-int entradas = 0;
-int linha = 1;
-int coluna = 1;
-int linha_anterior = 1;
-int coluna_anterior =1;
-int block_counter = 0;
-int block_coluna_counter=0;
-int save_coluna = 1;
-char erro_linha[2048];
-void pick_erro_linha(int linha);
 
+
+extern YYSTYPE yylval;
+extern std::string str;
 
 %}
 
@@ -75,7 +68,7 @@ void pick_erro_linha(int linha);
 "^"          {  return POW;}
 
 
-";"          {  return SEMICOLON;}
+";"          { return SEMICOLON;}
 ","          {  return COMMA;}
 ":"          {  return COLON;}
 "("          {  return L_PAREN;}
@@ -95,9 +88,9 @@ void pick_erro_linha(int linha);
 \\ {}
 \0 {}
 
-\n { }
+\n { return EOL; }
 
-[_a-zA-Z][_a-zA-Z0-9]* {yylval.string_id = strdup(yytext); return IDENTIFIER; }
+[_a-zA-Z][_a-zA-Z0-9]* {yylval.string_id = strdup(yytext); str = strdup(yytext); return IDENTIFIER; }
 
 . { printf("\nInvalid Symbol: %s\n\n", yytext); return 1;} 
 

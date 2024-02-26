@@ -14,15 +14,24 @@ int HashTable::calculateKey(string str) {
 }
 
 void HashTable::insert(string name, float value) {
-    int index = calculateKey(name);
-    table[index].push_back(Node(0, name, value)); // type == 0 para valorFloat
+    int tipo = getType(name);
+    if(tipo == -1){
+        int index = calculateKey(name);
+        table[index].push_back(Node(0, name, value)); // type == 0 para valorFloat
+    }else{
+        update(name,value);
+    }
 }
 
 void HashTable::insert(string name, vector<vector<float>> value) {
     
+    int tipo = getType(name);
+    if(tipo == -1){
     int index = calculateKey(name);
-    
     table[index].push_back(Node(1, name, value)); // type == 1 para matriz
+    }else{
+        update(name,value);
+    }
 }
 
 void* HashTable::search(string name) {
@@ -32,7 +41,7 @@ void* HashTable::search(string name) {
             if (node.type == 0) {
                 return &(node.valorFloat);
             } else if (node.type == 1) {
-                return &(node.matriz);
+                return &(node.matriz_hash);
             }
         }
     }
@@ -54,7 +63,7 @@ void HashTable::printAll() {
             if (node.type == 0) {
                 cout << "FLOAT" <<  endl;
             }else if(node.type == 1){
-                cout << "MATRIX [" << node.matriz.size() << "] [" << node.matriz[0].size() << "]" << endl;
+                cout << "MATRIX [" << node.matriz_hash.size() << "] [" << node.matriz_hash[0].size() << "]" << endl;
             }
         }
     }
@@ -70,4 +79,28 @@ int HashTable::getType(string name){
         }
     }
     return -1;
+}
+
+void HashTable::update(string name, float value) {
+    int index = calculateKey(name);
+    for (auto& node : table[index]) {
+        if (node.name == name) {
+            node.valorFloat = value;
+            node.type = 0;
+            return; // Elemento encontrado e atualizado, podemos sair da função
+        }
+    }
+    
+}
+
+void HashTable::update(string name, vector<vector<float>> value) {
+    int index = calculateKey(name);
+    for (auto& node : table[index]) {
+        if (node.name == name) {
+            node.matriz_hash = value;
+            node.type =1;
+            return; // Elemento encontrado e atualizado, podemos sair da função
+        }
+    }
+    
 }

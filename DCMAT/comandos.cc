@@ -1,11 +1,5 @@
 #include "comandos.hh"
 
-#include <cmath>
-#include <iomanip>
-#include <cstdio>
-#include <string>
-#include <iostream>
-
 
 float h_view_lo;
 float h_view_hi;
@@ -17,8 +11,17 @@ bool draw_axix;
 bool erase_plot;
 bool connect_dots;
 
+float **matriz_aaa;
+
 std::vector<std::vector<float>> matriz;
+
+std::vector<std::vector<float>> matriz_2;
+
 std::vector<int> casas_decimais;
+
+bool not_existId = false;
+
+std::string idName = "";
 
 int linhasMatriz;
 int colunasMatriz;
@@ -106,9 +109,15 @@ void printAbout(){
     std::cout << "+----------------------------------------------+\n\n";
 }
 
+
+
 std::vector<std::vector<float>> createMatriz(std::list<float>& listaMatriz, std::list<int>& ElementsPLinha, int numerodeColunas) {
 
-    matriz.clear();
+    for(auto& linha: matriz){
+        linha.clear();
+    }
+    
+
     linhasMatriz = ElementsPLinha.size();
     colunasMatriz = numerodeColunas;
 
@@ -178,7 +187,6 @@ void printMatriz(std::vector<std::vector<float>> matriz_aux)
     }
     
     int k = 0;
-    printf("%d\n",espacos_p_pular);
     printf("\n+-");
     for(int i = 0; i < (((float_precision+2)*matriz_aux[0].size())+matriz_aux[0].size()-1+espacos_p_pular) ; i++){
         printf(" ");
@@ -204,7 +212,7 @@ void printMatriz(std::vector<std::vector<float>> matriz_aux)
         printf(" ");
     }
     printf("-+\n\n");
-
+    
     casas_decimais.clear();
 }
 
@@ -336,10 +344,13 @@ void solveLinearSystem() {
 
 void printValorSimbolo(std::string name, HashTable hash){
 
+    
     int valor = hash.getType(name);
 
     if(valor == -1){
-        printf("\nUndefined symbol\n\n");
+        printf("\nUndefined symbol [");
+        std::cout << name << "]";
+        printf("\n\n");
     }else if(valor == 0){
         printf("\n");
         std::cout << name << " = ";
@@ -349,4 +360,152 @@ void printValorSimbolo(std::string name, HashTable hash){
         printMatriz(*(static_cast<std::vector<std::vector<float>>*>(hash.search(name))));
     }
 
+}
+
+
+
+void integrate(float a, float b, TreeNode* ast, HashTable hash) {
+    float sum = 0.0;
+
+    float dx = (b - a) / integral_steps;
+    for (int i = 0; i < integral_steps; i++) {
+        float xi = a + i * dx;
+        if(!not_existId){
+        sum += RPN_Walk_calculatinge(ast, xi,hash) * dx;
+        }else{
+            printf("\nUndefined symbol [");
+            std::cout << idName << "]";
+            printf("\n\n");
+            not_existId = false;
+            return;
+        }
+    }
+
+    printf("\n%.*f\n\n",float_precision, sum);
+    
+}
+
+void RpnFunc(TreeNode* ast){
+    printf("\n");
+    RPN_Walk(ast, float_precision);
+    printf("\n\n");
+}
+
+void somatorio(std::string variavel,float a, float b, TreeNode* ast, HashTable hash){
+    float sum = 0.0;
+    for (int i = a; i <= b; i++) {
+        if(!not_existId){
+            sum += RPN_Walk_somatorio(ast, variavel,i,hash);
+        }else{
+            printf("\nUndefined symbol [");
+            std::cout << idName << "]";
+            printf("\n\n");
+            not_existId = false;
+            return;
+        }
+        
+    }
+    printf("\n%.*f\n\n",float_precision, sum);
+}
+
+float calculate_Exp(TreeNode* ast, HashTable hash){
+    RPN_Walk_Errors(ast, hash);
+    if(not_existId){
+        printf("\n\n");
+        return 0;
+    }else{
+        setContador();
+        float valor = RPN_Walk_calculatinge(ast,0.0,hash);
+        
+        return valor;
+    }
+}
+
+void printValorCalculoExp(float valor){
+    printf("\n%.*f\n\n",float_precision, valor);
+}
+
+void multiplyMatrixByScalar(std::vector<std::vector<float>> matrix, int scalar) {
+
+    std::vector<std::vector<float>> result;
+
+    // Iterar sobre cada linha da matriz
+    for (const auto& row : matrix) {
+        std::vector<float> new_row;
+        // Multiplicar cada elemento da linha pelo escalar
+        for (int element : row) {
+            new_row.push_back(element * scalar);
+        }
+        // Adicionar a nova linha ao resultado
+        result.push_back(new_row);
+    }
+
+    
+    printMatriz(result);
+    
+    
+}
+
+void solve_Matriz_expressao(TreeNode* ast, HashTable hash){
+    RPN_Walk_Errors(ast, hash);
+    if(not_existId){
+    printf("\n\n");
+    return;   
+    }else{
+        printf("j");
+        //matriz_2 = RPN_Walk_matriz(ast,hash);
+        //printMatriz(matriz_2);
+        
+    }
+
+}
+
+std::vector<std::vector<float>> addMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2) {
+    std::vector<std::vector<float>> result;
+
+    // Verificar se as matrizes têm o mesmo tamanho
+    if (matrix1.size() != matrix2.size() || matrix1[0].size() != matrix2[0].size()) {
+        std::cerr << "Erro: As matrizes não têm o mesmo tamanho.\n";
+        return result; // Retornar uma matriz vazia em caso de erro
+    }
+
+    // Iterar sobre cada linha das matrizes
+    for (size_t i = 0; i < matrix1.size(); ++i) {
+        std::vector<float> new_row;
+        // Iterar sobre cada elemento das linhas
+        for (size_t j = 0; j < matrix1[i].size(); ++j) {
+            // Somar os elementos correspondentes das duas matrizes
+            float sum = matrix1[i][j] + matrix2[i][j];
+            new_row.push_back(sum);
+        }
+        // Adicionar a nova linha ao resultado
+        result.push_back(new_row);
+    }
+
+    return result;
+}
+
+std::vector<std::vector<float>> subtractMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2) {
+    std::vector<std::vector<float>> result;
+
+    // Verificar se as matrizes têm o mesmo tamanho
+    if (matrix1.size() != matrix2.size() || matrix1[0].size() != matrix2[0].size()) {
+        std::cerr << "Erro: As matrizes não têm o mesmo tamanho.\n";
+        return result; // Retornar uma matriz vazia em caso de erro
+    }
+
+    // Iterar sobre cada linha das matrizes
+    for (size_t i = 0; i < matrix1.size(); ++i) {
+        std::vector<float> new_row;
+        // Iterar sobre cada elemento das linhas
+        for (size_t j = 0; j < matrix1[i].size(); ++j) {
+            // Subtrair os elementos correspondentes das duas matrizes
+            float diff = matrix1[i][j] - matrix2[i][j];
+            new_row.push_back(diff);
+        }
+        // Adicionar a nova linha ao resultado
+        result.push_back(new_row);
+    }
+
+    return result;
 }
