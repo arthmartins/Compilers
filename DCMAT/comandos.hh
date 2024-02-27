@@ -67,12 +67,18 @@ float calculate_Exp(TreeNode* ast, HashTable hash);
 
 void printValorCalculoExp(float valor);
 
-void multiplyMatrixByScalar(std::vector<std::vector<float>> matrix, int scalar);
+void multiplyMatrixByScalar(std::vector<std::vector<float>>& matrix, int scalar);
 
 std::vector<std::vector<float>> addMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2);
 
-void solve_Matriz_expressao(TreeNode* ast, HashTable hash);
+std::vector<std::vector<float>> solve_Matriz_expressao(TreeNode* ast, HashTable hash);
 
 std::vector<std::vector<float>> subtractMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2);
+
+std::vector<std::vector<float>> multiplyMatrices(const std::vector<std::vector<float>>& matrix1, const std::vector<std::vector<float>>& matrix2);
+
+std::vector<std::vector<float>> multiplyByNumber(const std::vector<std::vector<float>>& matrix, float scalar);
+
+void plotarGrafico(TreeNode *plot, HashTable hash);
 
 #endif

@@ -91,13 +91,17 @@ extern void yylex_destroy(void);
 
 extern bool not_existId;
 bool matriz_exp = false;
+extern bool break_matriz;
+bool dont_worry = false;
 
 std::string universal;
 std::string str;
 std::string str_aux;
 std::string str_aux2;
 
-std::vector<std::vector<float>> matriz_global;
+std::vector<std::vector<float>>* matriz_global;
+
+std::vector<std::vector<float>> matriz_exp_global;
 
 HashTable hashTable;
 
@@ -110,11 +114,14 @@ float valorExp = 0;
 int sinal = 1;
 
 TreeNode* AST = NULL;
+TreeNode* PLOT_EXP = NULL;
 
+extern void printarExpressao();
+extern void AtribuirValor();
 extern void yyerror(char*); 
 
 
-#line 118 "sintatico.yy.cc"
+#line 125 "sintatico.yy.cc"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -198,49 +205,45 @@ enum yysymbol_kind_t
   YYSYMBOL_EOL = 53,                       /* EOL  */
   YYSYMBOL_YYACCEPT = 54,                  /* $accept  */
   YYSYMBOL_Programa = 55,                  /* Programa  */
-  YYSYMBOL_Comandos = 56,                  /* Comandos  */
-  YYSYMBOL_OnlyComandos = 57,              /* OnlyComandos  */
-  YYSYMBOL_FuncoesSet = 58,                /* FuncoesSet  */
-  YYSYMBOL_ValorIntOrFloat = 59,           /* ValorIntOrFloat  */
-  YYSYMBOL_Sinal = 60,                     /* Sinal  */
-  YYSYMBOL_ONorOFF = 61,                   /* ONorOFF  */
-  YYSYMBOL_ComandosPlus = 62,              /* ComandosPlus  */
-  YYSYMBOL_Grafico = 63,                   /* Grafico  */
-  YYSYMBOL_InfoPlot = 64,                  /* InfoPlot  */
-  YYSYMBOL_FuncaoPlot = 65,                /* FuncaoPlot  */
-  YYSYMBOL_InsideFuncoes = 66,             /* InsideFuncoes  */
+  YYSYMBOL_ManipulacaoSimbolos = 56,       /* ManipulacaoSimbolos  */
+  YYSYMBOL_Comandos = 57,                  /* Comandos  */
+  YYSYMBOL_OnlyComandos = 58,              /* OnlyComandos  */
+  YYSYMBOL_FuncoesSet = 59,                /* FuncoesSet  */
+  YYSYMBOL_ValorIntOrFloat = 60,           /* ValorIntOrFloat  */
+  YYSYMBOL_Sinal = 61,                     /* Sinal  */
+  YYSYMBOL_ONorOFF = 62,                   /* ONorOFF  */
+  YYSYMBOL_ComandosPlus = 63,              /* ComandosPlus  */
+  YYSYMBOL_Grafico = 64,                   /* Grafico  */
+  YYSYMBOL_InfoPlot = 65,                  /* InfoPlot  */
+  YYSYMBOL_66_1 = 66,                      /* $@1  */
   YYSYMBOL_FuncaoRpn = 67,                 /* FuncaoRpn  */
-  YYSYMBOL_Integral = 68,                  /* Integral  */
-  YYSYMBOL_IntegralAux = 69,               /* IntegralAux  */
-  YYSYMBOL_Funcao_Integral = 70,           /* Funcao_Integral  */
-  YYSYMBOL_Integral_aux = 71,              /* Integral_aux  */
-  YYSYMBOL_Integral_DivMul = 72,           /* Integral_DivMul  */
-  YYSYMBOL_Integral_Complemento = 73,      /* Integral_Complemento  */
-  YYSYMBOL_74_1 = 74,                      /* $@1  */
-  YYSYMBOL_Sum = 75,                       /* Sum  */
-  YYSYMBOL_Matrix = 76,                    /* Matrix  */
-  YYSYMBOL_ChamaCreateMatrix = 77,         /* ChamaCreateMatrix  */
-  YYSYMBOL_CreateMatrix = 78,              /* CreateMatrix  */
-  YYSYMBOL_CreateMatrixAux = 79,           /* CreateMatrixAux  */
-  YYSYMBOL_80_2 = 80,                      /* $@2  */
-  YYSYMBOL_81_3 = 81,                      /* $@3  */
-  YYSYMBOL_RepeatValuesMatrixOne = 82,     /* RepeatValuesMatrixOne  */
-  YYSYMBOL_83_4 = 83,                      /* $@4  */
-  YYSYMBOL_RepeatValuesMatrixTwo = 84,     /* RepeatValuesMatrixTwo  */
-  YYSYMBOL_85_5 = 85,                      /* $@5  */
-  YYSYMBOL_86_6 = 86,                      /* $@6  */
-  YYSYMBOL_ManipulacaoSimbolos = 87,       /* ManipulacaoSimbolos  */
+  YYSYMBOL_Sum = 68,                       /* Sum  */
+  YYSYMBOL_Matrix = 69,                    /* Matrix  */
+  YYSYMBOL_ChamaCreateMatrix = 70,         /* ChamaCreateMatrix  */
+  YYSYMBOL_CreateMatrix = 71,              /* CreateMatrix  */
+  YYSYMBOL_CreateMatrixAux = 72,           /* CreateMatrixAux  */
+  YYSYMBOL_73_2 = 73,                      /* $@2  */
+  YYSYMBOL_74_3 = 74,                      /* $@3  */
+  YYSYMBOL_RepeatValuesMatrixOne = 75,     /* RepeatValuesMatrixOne  */
+  YYSYMBOL_76_4 = 76,                      /* $@4  */
+  YYSYMBOL_RepeatValuesMatrixTwo = 77,     /* RepeatValuesMatrixTwo  */
+  YYSYMBOL_78_5 = 78,                      /* $@5  */
+  YYSYMBOL_79_6 = 79,                      /* $@6  */
+  YYSYMBOL_Integral = 80,                  /* Integral  */
+  YYSYMBOL_IntegralAux = 81,               /* IntegralAux  */
+  YYSYMBOL_Expressao_matematica_Direta = 82, /* Expressao_matematica_Direta  */
+  YYSYMBOL_Funcao_Integral = 83,           /* Funcao_Integral  */
+  YYSYMBOL_Integral_aux = 84,              /* Integral_aux  */
+  YYSYMBOL_Integral_DivMul = 85,           /* Integral_DivMul  */
+  YYSYMBOL_Integral_Complemento = 86,      /* Integral_Complemento  */
+  YYSYMBOL_87_7 = 87,                      /* $@7  */
   YYSYMBOL_continua_id = 88,               /* continua_id  */
-  YYSYMBOL_89_7 = 89,                      /* $@7  */
+  YYSYMBOL_89_8 = 89,                      /* $@8  */
   YYSYMBOL_continua_atribute = 90,         /* continua_atribute  */
-  YYSYMBOL_Expressao_matematica_Direta = 91, /* Expressao_matematica_Direta  */
-  YYSYMBOL_Expressao_matematica = 92,      /* Expressao_matematica  */
-  YYSYMBOL_Exp_aux = 93,                   /* Exp_aux  */
-  YYSYMBOL_Exp_DivMul = 94,                /* Exp_DivMul  */
-  YYSYMBOL_Exp_Complemento = 95,           /* Exp_Complemento  */
-  YYSYMBOL_Funcoes = 96,                   /* Funcoes  */
-  YYSYMBOL_OperadoresBinarios = 97,        /* OperadoresBinarios  */
-  YYSYMBOL_Constantes = 98                 /* Constantes  */
+  YYSYMBOL_Expressao_matematica = 91,      /* Expressao_matematica  */
+  YYSYMBOL_Exp_aux = 92,                   /* Exp_aux  */
+  YYSYMBOL_Exp_DivMul = 93,                /* Exp_DivMul  */
+  YYSYMBOL_Exp_Complemento = 94            /* Exp_Complemento  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -568,16 +571,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  65
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   246
+#define YYLAST   218
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  54
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  45
+#define YYNNTS  41
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  116
+#define YYNRULES  99
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  245
+#define YYNSTATES  219
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   308
@@ -631,18 +634,16 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   119,   119,   120,   121,   122,   124,   125,   127,   128,
-     129,   130,   131,   135,   136,   137,   138,   139,   140,   141,
-     144,   145,   147,   148,   149,   153,   154,   156,   157,   158,
-     159,   160,   163,   166,   167,   169,   171,   172,   173,   174,
-     175,   176,   180,   184,   186,   189,   192,   194,   203,   212,
-     213,   222,   232,   242,   242,   264,   274,   282,   291,   301,
-     310,   312,   321,   333,   336,   337,   338,   339,   341,   347,
-     349,   350,   349,   353,   353,   354,   356,   357,   356,   359,
-     365,   368,   368,   369,   370,   372,   373,   380,   386,   387,
-     389,   390,   398,   405,   406,   413,   421,   428,   442,   447,
-     452,   457,   463,   471,   478,   483,   488,   489,   490,   492,
-     493,   494,   495,   496,   497,   500,   501
+       0,   126,   126,   127,   128,   129,   131,   133,   134,   136,
+     137,   138,   139,   140,   144,   145,   146,   147,   148,   149,
+     150,   153,   154,   156,   157,   158,   162,   163,   165,   166,
+     167,   168,   169,   172,   175,   175,   176,   181,   187,   192,
+     193,   194,   195,   197,   202,   204,   205,   204,   208,   208,
+     209,   211,   212,   211,   214,   219,   221,   225,   228,   231,
+     233,   242,   251,   252,   261,   271,   281,   281,   305,   315,
+     323,   332,   342,   351,   353,   362,   371,   371,   372,   373,
+     375,   377,   384,   385,   387,   388,   396,   403,   404,   411,
+     419,   426,   444,   449,   454,   459,   465,   473,   480,   485
 };
 #endif
 
@@ -666,16 +667,15 @@ static const char *const yytname[] =
   "SET", "X", "PLUS", "MINUS", "MULTIPLY", "DIV", "REMAINDER", "POW",
   "SEMICOLON", "COMMA", "COLON", "L_PAREN", "R_PAREN", "L_SQUARE_BRACKET",
   "R_SQUARE_BRACKET", "EQUAL", "ATRIBUTE", "NUM_INTEGER", "NUM_REAL",
-  "EOL", "$accept", "Programa", "Comandos", "OnlyComandos", "FuncoesSet",
-  "ValorIntOrFloat", "Sinal", "ONorOFF", "ComandosPlus", "Grafico",
-  "InfoPlot", "FuncaoPlot", "InsideFuncoes", "FuncaoRpn", "Integral",
-  "IntegralAux", "Funcao_Integral", "Integral_aux", "Integral_DivMul",
-  "Integral_Complemento", "$@1", "Sum", "Matrix", "ChamaCreateMatrix",
-  "CreateMatrix", "CreateMatrixAux", "$@2", "$@3", "RepeatValuesMatrixOne",
-  "$@4", "RepeatValuesMatrixTwo", "$@5", "$@6", "ManipulacaoSimbolos",
-  "continua_id", "$@7", "continua_atribute", "Expressao_matematica_Direta",
-  "Expressao_matematica", "Exp_aux", "Exp_DivMul", "Exp_Complemento",
-  "Funcoes", "OperadoresBinarios", "Constantes", YY_NULLPTR
+  "EOL", "$accept", "Programa", "ManipulacaoSimbolos", "Comandos",
+  "OnlyComandos", "FuncoesSet", "ValorIntOrFloat", "Sinal", "ONorOFF",
+  "ComandosPlus", "Grafico", "InfoPlot", "$@1", "FuncaoRpn", "Sum",
+  "Matrix", "ChamaCreateMatrix", "CreateMatrix", "CreateMatrixAux", "$@2",
+  "$@3", "RepeatValuesMatrixOne", "$@4", "RepeatValuesMatrixTwo", "$@5",
+  "$@6", "Integral", "IntegralAux", "Expressao_matematica_Direta",
+  "Funcao_Integral", "Integral_aux", "Integral_DivMul",
+  "Integral_Complemento", "$@7", "continua_id", "$@8", "continua_atribute",
+  "Expressao_matematica", "Exp_aux", "Exp_DivMul", "Exp_Complemento", YY_NULLPTR
 };
 
 static const char *
@@ -685,7 +685,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-229)
+#define YYPACT_NINF (-192)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -699,31 +699,28 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-      -2,     2,  -229,    -3,     7,    15,     6,     9,  -229,    17,
-      21,    73,    46,    37,    55,  -229,    58,   161,  -229,  -229,
-    -229,    84,  -229,   105,    70,  -229,     4,  -229,  -229,  -229,
-    -229,  -229,     0,    50,  -229,  -229,  -229,    82,    88,  -229,
-      84,    95,   118,   137,   138,   139,   140,   141,    81,   181,
-      84,   143,   142,    84,    84,    84,   172,    81,    54,   136,
-      54,    81,   184,   149,   102,  -229,  -229,  -229,  -229,  -229,
-    -229,    84,    84,    84,    84,  -229,  -229,   150,  -229,  -229,
-    -229,   151,   153,  -229,  -229,  -229,  -229,  -229,  -229,    80,
-     154,   152,   155,  -229,   156,  -229,  -229,   158,   159,   160,
-      81,    80,  -229,  -229,  -229,  -229,  -229,    80,    54,  -229,
-    -229,   -21,    50,    50,  -229,  -229,  -229,  -229,    33,   163,
-     157,   162,  -229,    81,   166,   167,  -229,  -229,   164,   173,
-     174,  -229,   168,  -229,  -229,  -229,  -229,    33,  -229,  -229,
-    -229,  -229,  -229,  -229,    33,    33,   165,    33,    33,    81,
-    -229,   175,    80,   178,  -229,  -229,    81,    81,  -229,   142,
-    -229,   170,  -229,  -229,  -229,  -229,    80,   171,  -229,  -229,
-      80,    80,   176,  -229,    71,    33,   180,   182,   183,  -229,
-    -229,  -229,  -229,   179,   185,   186,  -229,   187,  -229,   188,
-     122,     8,    97,    98,  -229,  -229,    84,    84,    81,   189,
-     122,   122,   122,   122,  -229,   132,  -229,  -229,   122,   122,
-     122,   122,  -229,   190,    80,  -229,   192,   193,   194,   196,
-    -229,    98,    98,  -229,  -229,   191,  -229,   200,  -229,  -229,
-    -229,  -229,  -229,   183,   197,  -229,  -229,    81,    80,  -229,
-     183,   198,  -229,   200,  -229
+     134,   -23,  -192,   -12,    -7,    75,   -17,    24,  -192,    32,
+      35,    56,    36,    44,    47,  -192,    50,   100,  -192,  -192,
+    -192,     4,  -192,    97,    46,    48,  -192,    -1,  -192,  -192,
+    -192,  -192,  -192,  -192,    68,  -192,   -19,     5,  -192,  -192,
+       4,  -192,    78,    80,    81,    83,    91,    99,    25,   136,
+       4,   101,   103,     4,     4,     4,   132,    25,    -4,    96,
+      -4,    25,   138,   113,    10,  -192,  -192,  -192,  -192,  -192,
+    -192,  -192,  -192,     4,     4,     4,     4,   111,     4,  -192,
+    -192,  -192,  -192,  -192,  -192,    23,   112,   122,   120,  -192,
+     129,  -192,  -192,   121,   131,   135,    25,    23,  -192,  -192,
+    -192,  -192,  -192,    23,    -4,  -192,  -192,   -28,     5,     5,
+    -192,  -192,  -192,   139,   140,   144,   127,  -192,    25,   141,
+     146,  -192,  -192,   142,   147,   148,  -192,   137,  -192,  -192,
+    -192,    25,  -192,   150,    23,   153,  -192,  -192,    25,    25,
+    -192,   103,    23,   145,  -192,  -192,    23,    23,   149,  -192,
+       0,   154,   155,   156,  -192,  -192,  -192,  -192,   158,   159,
+     160,  -192,   161,  -192,   157,    51,     2,    67,    69,  -192,
+       4,     4,    25,   152,    51,    51,    51,    51,  -192,    30,
+    -192,  -192,    51,    51,    51,    51,  -192,   162,    23,  -192,
+     163,   165,   166,   167,  -192,    69,    69,  -192,  -192,   172,
+    -192,   164,  -192,  -192,  -192,  -192,  -192,   156,   133,  -192,
+    -192,    25,    23,  -192,   156,   168,  -192,   164,  -192
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -731,51 +728,48 @@ static const yytype_int16 yypact[] =
    means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-      24,     0,    61,     0,    34,     0,     0,     0,    10,     0,
-       0,     0,     0,     0,     0,    62,     0,     0,    58,    22,
-      23,    24,     5,     0,     0,     6,     0,     7,    27,    28,
-      29,    87,    45,    46,    49,    30,    31,     0,     0,    12,
-      24,     0,     0,     0,     0,     0,     0,     0,    24,     0,
-      24,     0,     0,    24,    24,    24,     0,    24,     0,     0,
-       0,    24,     0,     0,     0,     1,     2,    53,    20,    21,
-      52,    24,    24,    24,    24,     3,     4,     0,   106,   108,
-     107,     0,     0,    32,     8,    80,    65,    67,    66,     0,
-       0,     0,     0,     9,     0,    64,    68,     0,     0,     0,
-      24,     0,    26,    25,    15,    19,    17,     0,     0,    11,
-      60,    84,    47,    48,    50,    51,    59,    33,    41,     0,
-       0,     0,    55,    24,     0,     0,    57,    56,     0,     0,
-       0,    16,     0,    81,    54,   115,   116,    41,   109,   110,
-     111,   112,   114,   113,    41,    41,     0,    41,    41,    24,
-      43,     0,     0,     0,    42,    18,    24,    24,    83,    88,
-      37,     0,    40,    35,    38,    39,     0,     0,    70,    69,
-       0,     0,     0,    82,    24,    41,     0,     0,    75,    13,
-      14,    86,   102,     0,     0,     0,   103,     0,   101,     0,
-      24,     0,    89,    90,    93,    36,    24,    24,    24,     0,
-      24,    24,    24,    24,    85,     0,    97,    96,    24,    24,
-      24,    24,    44,     0,     0,    71,     0,     0,     0,     0,
-     105,    91,    92,    94,    95,     0,    73,    79,   104,    98,
-     100,    99,    63,    75,     0,    72,    74,    24,     0,    76,
-      75,     0,    77,    79,    78
+      25,     0,    74,     0,    36,     0,     0,     0,    11,     0,
+       0,     0,     0,     0,     0,    75,     0,     0,    71,    23,
+      24,    25,     5,     0,     0,     0,     7,     0,     8,    28,
+      29,    31,    32,    30,     0,    57,    58,    59,    62,    13,
+      25,    34,     0,     0,     0,     0,     0,     0,    25,     0,
+      25,     0,     0,    25,    25,    25,     0,    25,     0,     0,
+       0,    25,     0,     0,     0,     1,     3,     2,    66,    21,
+      22,    65,     4,    25,    25,    25,    25,     0,    25,    33,
+       9,     6,    40,    42,    41,     0,     0,     0,     0,    10,
+       0,    39,    43,     0,     0,     0,    25,     0,    27,    26,
+      16,    20,    18,     0,     0,    12,    73,    79,    60,    61,
+      63,    64,    72,     0,     0,     0,     0,    68,    25,     0,
+       0,    70,    69,     0,     0,     0,    17,     0,    76,    67,
+      35,    25,    55,     0,     0,     0,    37,    19,    25,    25,
+      78,    82,     0,     0,    45,    44,     0,     0,     0,    77,
+      25,     0,     0,    50,    14,    15,    81,    96,     0,     0,
+       0,    97,     0,    95,     0,    25,     0,    83,    84,    87,
+      25,    25,    25,     0,    25,    25,    25,    25,    80,     0,
+      91,    90,    25,    25,    25,    25,    56,     0,     0,    46,
+       0,     0,     0,     0,    99,    85,    86,    88,    89,     0,
+      48,    54,    98,    92,    94,    93,    38,    50,     0,    47,
+      49,    25,     0,    51,    50,     0,    52,    54,    53
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -229,  -229,  -229,  -229,  -229,   -26,   -47,   -41,  -229,  -229,
-    -229,  -229,   -51,  -229,  -229,  -229,   -50,   206,   100,    -9,
-    -229,  -229,  -229,    43,  -229,  -229,  -229,  -229,  -228,  -229,
-     -35,  -229,  -229,  -229,  -229,  -229,  -229,  -229,  -229,    20,
-     -33,  -153,  -229,  -229,  -229
+    -192,  -192,  -192,  -192,  -192,  -192,   -82,   -48,   -49,  -192,
+    -192,  -192,  -192,  -192,  -192,  -192,    60,  -192,  -192,  -192,
+    -192,  -191,  -192,     1,  -192,  -192,  -192,  -192,  -192,   -52,
+     194,    37,    18,  -192,  -192,  -192,  -192,  -192,    52,   -68,
+      -2
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_uint8 yydefgoto[] =
 {
-       0,    23,    24,    25,    63,   145,    26,   104,    27,    28,
-      42,    81,   146,    29,    30,    90,    31,    32,    33,    34,
-     111,    35,    36,    95,    96,   124,   178,   227,   199,   233,
-     235,   240,   243,    37,   134,   159,   173,    38,   174,   192,
-     193,   194,    82,   147,   148
+       0,    23,    24,    25,    26,    63,    71,    27,   100,    28,
+      29,    42,    78,    30,    31,    32,    91,    92,   119,   153,
+     201,   173,   207,   209,   214,   217,    33,    86,    34,    35,
+      36,    37,    38,   107,   129,   141,   149,   150,   167,   168,
+     169
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -783,60 +777,54 @@ static const yytype_uint8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-      70,    89,     1,    97,     2,   236,     3,    67,     4,     5,
-     101,   206,   241,     6,   107,     7,     8,     9,    10,   106,
-      11,   132,    43,    12,    13,    14,    15,    46,    16,   133,
-      47,    77,    17,    18,    19,    20,    71,    72,    44,   135,
-      45,    92,    40,    21,    39,    98,    99,   216,   217,   218,
-     219,    22,    41,   128,    48,    68,    69,   223,   224,    68,
-      69,   136,    49,   119,   114,   115,    50,   131,   137,   138,
-     139,   140,   141,   142,   143,   129,   152,   182,   144,   183,
-      51,   130,    53,   102,    68,    69,   160,   103,    73,    74,
-       2,   184,     3,   161,   162,    52,   164,   165,   185,   186,
-      54,   187,   166,    55,    10,    65,   188,    19,    20,   170,
-     171,    14,    15,   189,    16,    78,   190,    19,    20,    18,
-      19,    20,    79,    66,   195,    80,   168,   191,   182,    21,
-     183,    68,    69,   208,   209,    75,   210,   211,    71,    72,
-     176,    76,   184,   191,   179,   180,   212,   213,   110,   185,
-     186,   214,   187,   191,   191,   191,   191,   188,    19,    20,
-      83,   191,   191,   191,   191,   207,    56,   190,   208,   209,
-      57,   112,   113,    58,    59,   221,   222,    60,   220,    84,
-      85,    86,    87,    88,    91,    93,   100,   105,   226,    94,
-     238,   109,    61,    62,   108,   121,   116,   117,   118,   150,
-     120,   122,   172,   123,   125,   126,   127,   149,   244,   154,
-     205,   163,   239,   151,   153,   155,   175,   156,   157,   167,
-     169,   158,   177,   196,   200,   197,   198,    64,     0,   181,
-     201,   202,   203,   232,     0,     0,   225,   215,   228,   229,
-     230,   204,   231,   234,   237,     0,   242
+      85,    93,    68,   114,    46,   180,   157,    47,   158,    97,
+       2,   102,     3,   103,   127,   124,   210,    73,    74,    39,
+     159,   125,   128,   215,    10,    98,   113,   160,   161,    99,
+     162,    14,    15,    40,    16,   163,    19,    20,    41,    18,
+      19,    20,   164,    75,    76,   165,    73,    74,   123,    21,
+      69,    70,   144,    69,    70,   126,   106,   157,    77,   158,
+     151,    19,    20,    51,   154,   155,   182,   183,    88,    48,
+     134,   159,    94,    95,    69,    70,   194,    49,   160,   161,
+      50,   162,    43,   142,   181,    52,   163,    19,    20,    53,
+     146,   147,    54,   110,   111,    55,   165,    65,    44,    66,
+      45,    67,   166,   182,   183,    56,   200,   184,   185,    57,
+     108,   109,    58,    59,   195,   196,    60,   166,   186,   187,
+      79,    72,    80,    81,   188,    82,   166,   166,   166,   166,
+     213,    61,    62,    83,   166,   166,   166,   166,     1,    87,
+       2,    84,     3,    89,     4,     5,    96,   101,   104,     6,
+      90,     7,     8,     9,    10,   105,    11,   112,   115,    12,
+      13,    14,    15,   212,    16,   116,   117,   120,    17,    18,
+      19,    20,   190,   191,   192,   193,   118,   121,   133,    21,
+     211,   122,   197,   198,   131,   130,   132,    22,   136,   135,
+     140,   138,   139,   137,   143,   145,   152,   170,   171,   172,
+     189,   148,   156,   174,   175,   176,   177,   208,   199,   202,
+     178,   203,   204,   205,   206,    64,   216,   179,   218
 };
 
-static const yytype_int16 yycheck[] =
+static const yytype_uint8 yycheck[] =
 {
-      26,    48,     4,    53,     6,   233,     8,     3,    10,    11,
-      57,     3,   240,    15,    61,    17,    18,    19,    20,    60,
-      22,    42,     7,    25,    26,    27,    28,    21,    30,    50,
-      24,    40,    34,    35,    36,    37,    36,    37,    23,     6,
-      25,    50,    45,    45,    42,    54,    55,   200,   201,   202,
-     203,    53,    45,   100,    45,    51,    52,   210,   211,    51,
-      52,    28,    45,    89,    73,    74,    45,   108,    35,    36,
-      37,    38,    39,    40,    41,   101,   123,     6,    45,     8,
-       7,   107,    45,    29,    51,    52,   137,    33,    38,    39,
-       6,    20,     8,   144,   145,    49,   147,   148,    27,    28,
-      45,    30,   149,    45,    20,     0,    35,    36,    37,   156,
-     157,    27,    28,    42,    30,    20,    45,    36,    37,    35,
-      36,    37,    27,    53,   175,    30,   152,   174,     6,    45,
-       8,    51,    52,    36,    37,    53,    38,    39,    36,    37,
-     166,    53,    20,   190,   170,   171,   196,   197,    46,    27,
-      28,   198,    30,   200,   201,   202,   203,    35,    36,    37,
-      42,   208,   209,   210,   211,   191,     5,    45,    36,    37,
-       9,    71,    72,    12,    13,   208,   209,    16,    46,    42,
-      42,    42,    42,    42,     3,    42,    14,    51,   214,    47,
-     237,    42,    31,    32,    10,    43,    46,    46,    45,    42,
-      46,    46,   159,    47,    46,    46,    46,    44,   243,    42,
-     190,    46,   238,    51,    48,    51,    46,    44,    44,    44,
-      42,    53,    51,    43,    45,    43,    43,    21,    -1,    53,
-      45,    45,    45,    42,    -1,    -1,    46,    48,    46,    46,
-      46,    53,    46,    43,    47,    -1,    48
+      48,    53,     3,    85,    21,     3,     6,    24,     8,    57,
+       6,    60,     8,    61,    42,    97,   207,    36,    37,    42,
+      20,   103,    50,   214,    20,    29,    78,    27,    28,    33,
+      30,    27,    28,    45,    30,    35,    36,    37,    45,    35,
+      36,    37,    42,    38,    39,    45,    36,    37,    96,    45,
+      51,    52,   134,    51,    52,   104,    46,     6,    40,     8,
+     142,    36,    37,     7,   146,   147,    36,    37,    50,    45,
+     118,    20,    54,    55,    51,    52,    46,    45,    27,    28,
+      45,    30,     7,   131,   166,    49,    35,    36,    37,    45,
+     138,   139,    45,    75,    76,    45,    45,     0,    23,    53,
+      25,    53,   150,    36,    37,     5,   188,    38,    39,     9,
+      73,    74,    12,    13,   182,   183,    16,   165,   170,   171,
+      42,    53,    42,    42,   172,    42,   174,   175,   176,   177,
+     212,    31,    32,    42,   182,   183,   184,   185,     4,     3,
+       6,    42,     8,    42,    10,    11,    14,    51,    10,    15,
+      47,    17,    18,    19,    20,    42,    22,    46,    46,    25,
+      26,    27,    28,   211,    30,    43,    46,    46,    34,    35,
+      36,    37,   174,   175,   176,   177,    47,    46,    51,    45,
+      47,    46,   184,   185,    44,    46,    42,    53,    42,    48,
+      53,    44,    44,    51,    44,    42,    51,    43,    43,    43,
+      48,   141,    53,    45,    45,    45,    45,    43,    46,    46,
+      53,    46,    46,    46,    42,    21,    48,   165,   217
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -845,63 +833,56 @@ static const yytype_int8 yystos[] =
 {
        0,     4,     6,     8,    10,    11,    15,    17,    18,    19,
       20,    22,    25,    26,    27,    28,    30,    34,    35,    36,
-      37,    45,    53,    55,    56,    57,    60,    62,    63,    67,
-      68,    70,    71,    72,    73,    75,    76,    87,    91,    42,
-      45,    45,    64,     7,    23,    25,    21,    24,    45,    45,
+      37,    45,    53,    55,    56,    57,    58,    61,    63,    64,
+      67,    68,    69,    80,    82,    83,    84,    85,    86,    42,
+      45,    45,    65,     7,    23,    25,    21,    24,    45,    45,
       45,     7,    49,    45,    45,    45,     5,     9,    12,    13,
-      16,    31,    32,    58,    71,     0,    53,     3,    51,    52,
-      59,    36,    37,    38,    39,    53,    53,    73,    20,    27,
-      30,    65,    96,    42,    42,    42,    42,    42,    42,    60,
-      69,     3,    73,    42,    47,    77,    78,    70,    73,    73,
-      14,    60,    29,    33,    61,    51,    61,    60,    10,    42,
-      46,    74,    72,    72,    73,    73,    46,    46,    45,    59,
-      46,    43,    46,    47,    79,    46,    46,    46,    60,    59,
-      59,    61,    42,    50,    88,     6,    28,    35,    36,    37,
-      38,    39,    40,    41,    45,    59,    66,    97,    98,    44,
-      42,    51,    60,    48,    42,    51,    44,    44,    53,    89,
-      66,    66,    66,    46,    66,    66,    60,    44,    59,    42,
-      60,    60,    77,    90,    92,    46,    59,    51,    80,    59,
-      59,    53,     6,     8,    20,    27,    28,    30,    35,    42,
-      45,    60,    93,    94,    95,    66,    43,    43,    43,    82,
-      45,    45,    45,    45,    53,    93,     3,    59,    36,    37,
-      38,    39,    70,    70,    60,    48,    95,    95,    95,    95,
-      46,    94,    94,    95,    95,    46,    59,    81,    46,    46,
-      46,    46,    42,    83,    43,    84,    82,    47,    60,    59,
-      85,    82,    48,    86,    84
+      16,    31,    32,    59,    84,     0,    53,    53,     3,    51,
+      52,    60,    53,    36,    37,    38,    39,    86,    66,    42,
+      42,    42,    42,    42,    42,    61,    81,     3,    86,    42,
+      47,    70,    71,    83,    86,    86,    14,    61,    29,    33,
+      62,    51,    62,    61,    10,    42,    46,    87,    85,    85,
+      86,    86,    46,    83,    60,    46,    43,    46,    47,    72,
+      46,    46,    46,    61,    60,    60,    62,    42,    50,    88,
+      46,    44,    42,    51,    61,    48,    42,    51,    44,    44,
+      53,    89,    61,    44,    60,    42,    61,    61,    70,    90,
+      91,    60,    51,    73,    60,    60,    53,     6,     8,    20,
+      27,    28,    30,    35,    42,    45,    61,    92,    93,    94,
+      43,    43,    43,    75,    45,    45,    45,    45,    53,    92,
+       3,    60,    36,    37,    38,    39,    83,    83,    61,    48,
+      94,    94,    94,    94,    46,    93,    93,    94,    94,    46,
+      60,    74,    46,    46,    46,    46,    42,    76,    43,    77,
+      75,    47,    61,    60,    78,    75,    48,    79,    77
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    54,    55,    55,    55,    55,    56,    56,    57,    57,
-      57,    57,    57,    58,    58,    58,    58,    58,    58,    58,
-      59,    59,    60,    60,    60,    61,    61,    62,    62,    62,
-      62,    62,    63,    64,    64,    65,    66,    66,    66,    66,
-      66,    66,    67,    68,    69,    70,    71,    71,    71,    72,
-      72,    72,    73,    74,    73,    73,    73,    73,    73,    73,
-      73,    73,    73,    75,    76,    76,    76,    76,    77,    78,
-      80,    81,    79,    83,    82,    82,    85,    86,    84,    84,
-      87,    89,    88,    88,    88,    90,    90,    91,    92,    92,
-      93,    93,    93,    94,    94,    94,    95,    95,    95,    95,
-      95,    95,    95,    95,    95,    95,    96,    96,    96,    97,
-      97,    97,    97,    97,    97,    98,    98
+       0,    54,    55,    55,    55,    55,    56,    57,    57,    58,
+      58,    58,    58,    58,    59,    59,    59,    59,    59,    59,
+      59,    60,    60,    61,    61,    61,    62,    62,    63,    63,
+      63,    63,    63,    64,    66,    65,    65,    67,    68,    69,
+      69,    69,    69,    70,    71,    73,    74,    72,    76,    75,
+      75,    78,    79,    77,    77,    80,    81,    82,    83,    84,
+      84,    84,    85,    85,    85,    86,    87,    86,    86,    86,
+      86,    86,    86,    86,    86,    86,    89,    88,    88,    88,
+      90,    90,    91,    91,    92,    92,    92,    93,    93,    93,
+      94,    94,    94,    94,    94,    94,    94,    94,    94,    94
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     2,     2,     2,     1,     1,     1,     3,     3,
-       1,     3,     2,     6,     6,     2,     3,     2,     4,     2,
-       1,     1,     1,     1,     0,     1,     1,     1,     1,     1,
-       1,     1,     3,     3,     0,     4,     4,     2,     2,     2,
-       2,     0,     5,     5,     7,     1,     1,     3,     3,     1,
-       3,     3,     2,     0,     4,     4,     4,     4,     1,     4,
-       3,     1,     1,    11,     3,     3,     3,     3,     1,     4,
-       0,     0,     8,     0,     5,     0,     0,     0,     9,     0,
-       3,     0,     3,     2,     0,     3,     2,     1,     0,     2,
-       1,     3,     3,     1,     3,     3,     2,     2,     4,     4,
-       4,     1,     1,     1,     4,     3,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1
+       0,     2,     2,     2,     2,     1,     3,     1,     1,     3,
+       3,     1,     3,     2,     6,     6,     2,     3,     2,     4,
+       2,     1,     1,     1,     1,     0,     1,     1,     1,     1,
+       1,     1,     1,     3,     0,     4,     0,     5,    11,     3,
+       3,     3,     3,     1,     4,     0,     0,     8,     0,     5,
+       0,     0,     0,     9,     0,     5,     7,     1,     1,     1,
+       3,     3,     1,     3,     3,     2,     0,     4,     4,     4,
+       4,     1,     4,     3,     1,     1,     0,     3,     2,     0,
+       3,     2,     0,     2,     1,     3,     3,     1,     3,     3,
+       2,     2,     4,     4,     4,     1,     1,     1,     4,     3
 };
 
 
@@ -1365,277 +1346,359 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* Programa: Comandos EOL  */
-#line 119 "sintatico.y"
+#line 126 "sintatico.y"
                        {return CONTINUE_VALUE;}
-#line 1371 "sintatico.yy.cc"
+#line 1352 "sintatico.yy.cc"
     break;
 
   case 3: /* Programa: ManipulacaoSimbolos EOL  */
-#line 120 "sintatico.y"
+#line 127 "sintatico.y"
                                   {return CONTINUE_VALUE;}
-#line 1377 "sintatico.yy.cc"
+#line 1358 "sintatico.yy.cc"
     break;
 
   case 4: /* Programa: Expressao_matematica_Direta EOL  */
-#line 121 "sintatico.y"
+#line 128 "sintatico.y"
                                           {return CONTINUE_VALUE;}
-#line 1383 "sintatico.yy.cc"
+#line 1364 "sintatico.yy.cc"
     break;
 
   case 5: /* Programa: EOL  */
-#line 122 "sintatico.y"
-              {return CONTINUE_VALUE;}
-#line 1389 "sintatico.yy.cc"
-    break;
-
-  case 6: /* Comandos: OnlyComandos  */
-#line 124 "sintatico.y"
-                       {}
-#line 1395 "sintatico.yy.cc"
-    break;
-
-  case 7: /* Comandos: ComandosPlus  */
-#line 125 "sintatico.y"
-                       {}
-#line 1401 "sintatico.yy.cc"
-    break;
-
-  case 8: /* OnlyComandos: SHOW SETTINGS SEMICOLON  */
-#line 127 "sintatico.y"
-                                      { showSettings();}
-#line 1407 "sintatico.yy.cc"
-    break;
-
-  case 9: /* OnlyComandos: RESET SETTINGS SEMICOLON  */
-#line 128 "sintatico.y"
-                                       { setDefaultValues(); }
-#line 1413 "sintatico.yy.cc"
-    break;
-
-  case 10: /* OnlyComandos: QUIT  */
 #line 129 "sintatico.y"
-                   { return QUIT_VALUE;}
-#line 1419 "sintatico.yy.cc"
+              {return CONTINUE_VALUE;}
+#line 1370 "sintatico.yy.cc"
     break;
 
-  case 11: /* OnlyComandos: SET FuncoesSet SEMICOLON  */
-#line 130 "sintatico.y"
-                                       {}
-#line 1425 "sintatico.yy.cc"
-    break;
-
-  case 12: /* OnlyComandos: ABOUT SEMICOLON  */
+  case 6: /* ManipulacaoSimbolos: SHOW SYMBOLS SEMICOLON  */
 #line 131 "sintatico.y"
-                              { printAbout(); }
-#line 1431 "sintatico.yy.cc"
+                                            { hashTable.printAll();}
+#line 1376 "sintatico.yy.cc"
     break;
 
-  case 13: /* FuncoesSet: H_VIEW Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat  */
-#line 135 "sintatico.y"
-                                                                     { setH_view((yyvsp[-4].inteiro)*(yyvsp[-3].real), (yyvsp[-1].inteiro)*(yyvsp[0].real)); }
-#line 1437 "sintatico.yy.cc"
-    break;
-
-  case 14: /* FuncoesSet: V_VIEW Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat  */
-#line 136 "sintatico.y"
-                                                                       {setV_view((yyvsp[-4].inteiro)*(yyvsp[-3].real), (yyvsp[-1].inteiro)*(yyvsp[0].real));}
-#line 1443 "sintatico.yy.cc"
-    break;
-
-  case 15: /* FuncoesSet: AXIS ONorOFF  */
-#line 137 "sintatico.y"
-                           {setAxis((yyvsp[0].inteiro));}
-#line 1449 "sintatico.yy.cc"
-    break;
-
-  case 16: /* FuncoesSet: ERASE PLOT ONorOFF  */
-#line 138 "sintatico.y"
-                                 {setErase((yyvsp[0].inteiro));}
-#line 1455 "sintatico.yy.cc"
-    break;
-
-  case 17: /* FuncoesSet: CONNECT_DOTS ONorOFF  */
-#line 139 "sintatico.y"
-                                   {setConnectDots((yyvsp[0].inteiro));}
-#line 1461 "sintatico.yy.cc"
-    break;
-
-  case 18: /* FuncoesSet: FLOAT PRECISION Sinal NUM_INTEGER  */
-#line 140 "sintatico.y"
-                                                {setFloatPrecision((yyvsp[-1].inteiro)*(yyvsp[0].inteiro));}
-#line 1467 "sintatico.yy.cc"
-    break;
-
-  case 19: /* FuncoesSet: INTEGRAL_STEPS NUM_INTEGER  */
-#line 141 "sintatico.y"
-                                         {setIntegralSteps((yyvsp[0].inteiro));}
-#line 1473 "sintatico.yy.cc"
-    break;
-
-  case 20: /* ValorIntOrFloat: NUM_INTEGER  */
-#line 144 "sintatico.y"
-                             {(yyval.real) = (yyvsp[0].inteiro);}
-#line 1479 "sintatico.yy.cc"
-    break;
-
-  case 21: /* ValorIntOrFloat: NUM_REAL  */
-#line 145 "sintatico.y"
-                     {(yyval.real) = (yyvsp[0].real);}
-#line 1485 "sintatico.yy.cc"
-    break;
-
-  case 22: /* Sinal: PLUS  */
-#line 147 "sintatico.y"
-            {(yyval.inteiro) = 1;}
-#line 1491 "sintatico.yy.cc"
-    break;
-
-  case 23: /* Sinal: MINUS  */
-#line 148 "sintatico.y"
-            {(yyval.inteiro) = -1;}
-#line 1497 "sintatico.yy.cc"
-    break;
-
-  case 24: /* Sinal: %empty  */
-#line 149 "sintatico.y"
-      {(yyval.inteiro) = 1;}
-#line 1503 "sintatico.yy.cc"
-    break;
-
-  case 25: /* ONorOFF: ON  */
-#line 153 "sintatico.y"
-            {(yyval.inteiro) = 1;}
-#line 1509 "sintatico.yy.cc"
-    break;
-
-  case 26: /* ONorOFF: OFF  */
-#line 154 "sintatico.y"
-             {(yyval.inteiro) = 0;}
-#line 1515 "sintatico.yy.cc"
-    break;
-
-  case 27: /* ComandosPlus: Grafico  */
-#line 156 "sintatico.y"
-                      {}
-#line 1521 "sintatico.yy.cc"
-    break;
-
-  case 28: /* ComandosPlus: FuncaoRpn  */
-#line 157 "sintatico.y"
-                        {}
-#line 1527 "sintatico.yy.cc"
-    break;
-
-  case 29: /* ComandosPlus: Integral  */
-#line 158 "sintatico.y"
+  case 7: /* Comandos: OnlyComandos  */
+#line 133 "sintatico.y"
                        {}
-#line 1533 "sintatico.yy.cc"
+#line 1382 "sintatico.yy.cc"
     break;
 
-  case 30: /* ComandosPlus: Sum  */
-#line 159 "sintatico.y"
-                  {}
-#line 1539 "sintatico.yy.cc"
+  case 8: /* Comandos: ComandosPlus  */
+#line 134 "sintatico.y"
+                       {}
+#line 1388 "sintatico.yy.cc"
     break;
 
-  case 31: /* ComandosPlus: Matrix  */
-#line 160 "sintatico.y"
-                     {}
-#line 1545 "sintatico.yy.cc"
+  case 9: /* OnlyComandos: SHOW SETTINGS SEMICOLON  */
+#line 136 "sintatico.y"
+                                      { showSettings();}
+#line 1394 "sintatico.yy.cc"
     break;
 
-  case 32: /* Grafico: PLOT InfoPlot SEMICOLON  */
+  case 10: /* OnlyComandos: RESET SETTINGS SEMICOLON  */
+#line 137 "sintatico.y"
+                                       { setDefaultValues(); }
+#line 1400 "sintatico.yy.cc"
+    break;
+
+  case 11: /* OnlyComandos: QUIT  */
+#line 138 "sintatico.y"
+                   { return QUIT_VALUE;}
+#line 1406 "sintatico.yy.cc"
+    break;
+
+  case 12: /* OnlyComandos: SET FuncoesSet SEMICOLON  */
+#line 139 "sintatico.y"
+                                       {}
+#line 1412 "sintatico.yy.cc"
+    break;
+
+  case 13: /* OnlyComandos: ABOUT SEMICOLON  */
+#line 140 "sintatico.y"
+                              { printAbout(); }
+#line 1418 "sintatico.yy.cc"
+    break;
+
+  case 14: /* FuncoesSet: H_VIEW Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat  */
+#line 144 "sintatico.y"
+                                                                     { setH_view((yyvsp[-4].inteiro)*(yyvsp[-3].real), (yyvsp[-1].inteiro)*(yyvsp[0].real)); }
+#line 1424 "sintatico.yy.cc"
+    break;
+
+  case 15: /* FuncoesSet: V_VIEW Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat  */
+#line 145 "sintatico.y"
+                                                                       {setV_view((yyvsp[-4].inteiro)*(yyvsp[-3].real), (yyvsp[-1].inteiro)*(yyvsp[0].real));}
+#line 1430 "sintatico.yy.cc"
+    break;
+
+  case 16: /* FuncoesSet: AXIS ONorOFF  */
+#line 146 "sintatico.y"
+                           {setAxis((yyvsp[0].inteiro));}
+#line 1436 "sintatico.yy.cc"
+    break;
+
+  case 17: /* FuncoesSet: ERASE PLOT ONorOFF  */
+#line 147 "sintatico.y"
+                                 {setErase((yyvsp[0].inteiro));}
+#line 1442 "sintatico.yy.cc"
+    break;
+
+  case 18: /* FuncoesSet: CONNECT_DOTS ONorOFF  */
+#line 148 "sintatico.y"
+                                   {setConnectDots((yyvsp[0].inteiro));}
+#line 1448 "sintatico.yy.cc"
+    break;
+
+  case 19: /* FuncoesSet: FLOAT PRECISION Sinal NUM_INTEGER  */
+#line 149 "sintatico.y"
+                                                {setFloatPrecision((yyvsp[-1].inteiro)*(yyvsp[0].inteiro));}
+#line 1454 "sintatico.yy.cc"
+    break;
+
+  case 20: /* FuncoesSet: INTEGRAL_STEPS NUM_INTEGER  */
+#line 150 "sintatico.y"
+                                         {setIntegralSteps((yyvsp[0].inteiro));}
+#line 1460 "sintatico.yy.cc"
+    break;
+
+  case 21: /* ValorIntOrFloat: NUM_INTEGER  */
+#line 153 "sintatico.y"
+                             {(yyval.real) = (yyvsp[0].inteiro);}
+#line 1466 "sintatico.yy.cc"
+    break;
+
+  case 22: /* ValorIntOrFloat: NUM_REAL  */
+#line 154 "sintatico.y"
+                     {(yyval.real) = (yyvsp[0].real);}
+#line 1472 "sintatico.yy.cc"
+    break;
+
+  case 23: /* Sinal: PLUS  */
+#line 156 "sintatico.y"
+            {(yyval.inteiro) = 1;}
+#line 1478 "sintatico.yy.cc"
+    break;
+
+  case 24: /* Sinal: MINUS  */
+#line 157 "sintatico.y"
+            {(yyval.inteiro) = -1;}
+#line 1484 "sintatico.yy.cc"
+    break;
+
+  case 25: /* Sinal: %empty  */
+#line 158 "sintatico.y"
+      {(yyval.inteiro) = 1;}
+#line 1490 "sintatico.yy.cc"
+    break;
+
+  case 26: /* ONorOFF: ON  */
+#line 162 "sintatico.y"
+            {(yyval.inteiro) = 1;}
+#line 1496 "sintatico.yy.cc"
+    break;
+
+  case 27: /* ONorOFF: OFF  */
 #line 163 "sintatico.y"
-                                 {return CONTINUE_VALUE;}
-#line 1551 "sintatico.yy.cc"
+             {(yyval.inteiro) = 0;}
+#line 1502 "sintatico.yy.cc"
     break;
 
-  case 33: /* InfoPlot: L_PAREN FuncaoPlot R_PAREN  */
+  case 28: /* ComandosPlus: Grafico  */
+#line 165 "sintatico.y"
+                      {}
+#line 1508 "sintatico.yy.cc"
+    break;
+
+  case 29: /* ComandosPlus: FuncaoRpn  */
 #line 166 "sintatico.y"
-                                     {return CONTINUE_VALUE;}
-#line 1557 "sintatico.yy.cc"
+                        {}
+#line 1514 "sintatico.yy.cc"
     break;
 
-  case 34: /* InfoPlot: %empty  */
+  case 30: /* ComandosPlus: Integral  */
 #line 167 "sintatico.y"
-          {}
-#line 1563 "sintatico.yy.cc"
+                       {}
+#line 1520 "sintatico.yy.cc"
     break;
 
-  case 35: /* FuncaoPlot: Funcoes L_PAREN InsideFuncoes R_PAREN  */
+  case 31: /* ComandosPlus: Sum  */
+#line 168 "sintatico.y"
+                  {}
+#line 1526 "sintatico.yy.cc"
+    break;
+
+  case 32: /* ComandosPlus: Matrix  */
 #line 169 "sintatico.y"
-                                                  {return CONTINUE_VALUE;}
-#line 1569 "sintatico.yy.cc"
+                     {}
+#line 1532 "sintatico.yy.cc"
     break;
 
-  case 36: /* InsideFuncoes: L_PAREN InsideFuncoes R_PAREN InsideFuncoes  */
-#line 171 "sintatico.y"
-                                                          {}
-#line 1575 "sintatico.yy.cc"
-    break;
-
-  case 37: /* InsideFuncoes: X InsideFuncoes  */
+  case 33: /* Grafico: PLOT InfoPlot SEMICOLON  */
 #line 172 "sintatico.y"
-                             {}
-#line 1581 "sintatico.yy.cc"
+                                 {plotarGrafico(PLOT_EXP, hashTable); dont_worry = false; }
+#line 1538 "sintatico.yy.cc"
     break;
 
-  case 38: /* InsideFuncoes: OperadoresBinarios InsideFuncoes  */
-#line 173 "sintatico.y"
-                                              {}
-#line 1587 "sintatico.yy.cc"
-    break;
-
-  case 39: /* InsideFuncoes: Constantes InsideFuncoes  */
-#line 174 "sintatico.y"
-                                      {}
-#line 1593 "sintatico.yy.cc"
-    break;
-
-  case 40: /* InsideFuncoes: ValorIntOrFloat InsideFuncoes  */
+  case 34: /* $@1: %empty  */
 #line 175 "sintatico.y"
-                                           {}
-#line 1599 "sintatico.yy.cc"
+                  {dont_worry = true;}
+#line 1544 "sintatico.yy.cc"
     break;
 
-  case 41: /* InsideFuncoes: %empty  */
+  case 35: /* InfoPlot: L_PAREN $@1 Funcao_Integral R_PAREN  */
+#line 175 "sintatico.y"
+                                                               {PLOT_EXP = AST; }
+#line 1550 "sintatico.yy.cc"
+    break;
+
+  case 36: /* InfoPlot: %empty  */
 #line 176 "sintatico.y"
-              {}
-#line 1605 "sintatico.yy.cc"
+          {}
+#line 1556 "sintatico.yy.cc"
     break;
 
-  case 42: /* FuncaoRpn: RPN L_PAREN Funcao_Integral R_PAREN SEMICOLON  */
-#line 180 "sintatico.y"
+  case 37: /* FuncaoRpn: RPN L_PAREN Funcao_Integral R_PAREN SEMICOLON  */
+#line 181 "sintatico.y"
                                                          {    RpnFunc(AST); /*Delete_Tree(AST);*/ }
-#line 1611 "sintatico.yy.cc"
+#line 1562 "sintatico.yy.cc"
     break;
 
-  case 43: /* Integral: INTEGRATE L_PAREN IntegralAux R_PAREN SEMICOLON  */
-#line 184 "sintatico.y"
-                                                          {}
-#line 1617 "sintatico.yy.cc"
+  case 38: /* Sum: SUM L_PAREN IDENTIFIER COMMA NUM_INTEGER COLON NUM_INTEGER COMMA Funcao_Integral R_PAREN SEMICOLON  */
+#line 187 "sintatico.y"
+                                                                                                        {somatorio((yyvsp[-8].string_id), (yyvsp[-6].inteiro), (yyvsp[-4].inteiro), AST,hashTable); /*Delete_Tree(AST);*/}
+#line 1568 "sintatico.yy.cc"
     break;
 
-  case 44: /* IntegralAux: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat COMMA Funcao_Integral  */
-#line 186 "sintatico.y"
-                                                                                     { integrate((yyvsp[-6].inteiro)*(yyvsp[-5].real), (yyvsp[-3].inteiro)*(yyvsp[-2].real), AST,hashTable); /*Delete_Tree(AST);*/}
-#line 1623 "sintatico.yy.cc"
-    break;
-
-  case 45: /* Funcao_Integral: Integral_aux  */
-#line 189 "sintatico.y"
-                              { AST = (yyvsp[0].ast); valorExp = calculate_Exp(AST, hashTable); }
-#line 1629 "sintatico.yy.cc"
-    break;
-
-  case 46: /* Integral_aux: Integral_DivMul  */
+  case 39: /* Matrix: MATRIX EQUAL ChamaCreateMatrix  */
 #line 192 "sintatico.y"
-                              { (yyval.ast) = (yyvsp[0].ast);}
-#line 1635 "sintatico.yy.cc"
+                                       {}
+#line 1574 "sintatico.yy.cc"
     break;
 
-  case 47: /* Integral_aux: Integral_aux PLUS Integral_DivMul  */
+  case 40: /* Matrix: SHOW MATRIX SEMICOLON  */
+#line 193 "sintatico.y"
+                                { showMatriz(); return CONTINUE_VALUE;}
+#line 1580 "sintatico.yy.cc"
+    break;
+
+  case 41: /* Matrix: SOLVE DETERMINANT SEMICOLON  */
 #line 194 "sintatico.y"
+                                    { determinanteMatriz(); return CONTINUE_VALUE;}
+#line 1586 "sintatico.yy.cc"
+    break;
+
+  case 42: /* Matrix: SOLVE LINEAR_SYSTEM SEMICOLON  */
+#line 195 "sintatico.y"
+                                      { solveLinearSystem();  return CONTINUE_VALUE;}
+#line 1592 "sintatico.yy.cc"
+    break;
+
+  case 43: /* ChamaCreateMatrix: CreateMatrix  */
+#line 197 "sintatico.y"
+                                {    
+                                 matriz_global = createMatriz(listMatriz,elemtsPlinha,maisElementosLinha); elementosLinha = 0; maisElementosLinha = 0;
+ /* destruir listas aqui */ }
+#line 1600 "sintatico.yy.cc"
+    break;
+
+  case 44: /* CreateMatrix: L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON  */
+#line 202 "sintatico.y"
+                                                                          {}
+#line 1606 "sintatico.yy.cc"
+    break;
+
+  case 45: /* $@2: %empty  */
+#line 204 "sintatico.y"
+                                                        { elementosLinha++; listMatriz.push_back((yyvsp[-1].inteiro)*(yyvsp[0].real)); }
+#line 1612 "sintatico.yy.cc"
+    break;
+
+  case 46: /* $@3: %empty  */
+#line 205 "sintatico.y"
+                                                 { elemtsPlinha.push_back(elementosLinha); maisElementosLinha = (elementosLinha > maisElementosLinha) ? elementosLinha : maisElementosLinha;
+                                         elementosLinha = 0; }
+#line 1619 "sintatico.yy.cc"
+    break;
+
+  case 47: /* CreateMatrixAux: L_SQUARE_BRACKET Sinal ValorIntOrFloat $@2 RepeatValuesMatrixOne R_SQUARE_BRACKET $@3 RepeatValuesMatrixTwo  */
+#line 206 "sintatico.y"
+                                                                                    { }
+#line 1625 "sintatico.yy.cc"
+    break;
+
+  case 48: /* $@4: %empty  */
+#line 208 "sintatico.y"
+                                                   {elementosLinha++; listMatriz.push_back((yyvsp[-1].inteiro)*(yyvsp[0].real)); }
+#line 1631 "sintatico.yy.cc"
+    break;
+
+  case 49: /* RepeatValuesMatrixOne: COMMA Sinal ValorIntOrFloat $@4 RepeatValuesMatrixOne  */
+#line 208 "sintatico.y"
+                                                                                                                           {}
+#line 1637 "sintatico.yy.cc"
+    break;
+
+  case 50: /* RepeatValuesMatrixOne: %empty  */
+#line 209 "sintatico.y"
+                      {}
+#line 1643 "sintatico.yy.cc"
+    break;
+
+  case 51: /* $@5: %empty  */
+#line 211 "sintatico.y"
+                                                                    {elementosLinha++; listMatriz.push_back((yyvsp[-1].inteiro)*(yyvsp[0].real));  }
+#line 1649 "sintatico.yy.cc"
+    break;
+
+  case 52: /* $@6: %empty  */
+#line 212 "sintatico.y"
+                                                { elemtsPlinha.push_back(elementosLinha); maisElementosLinha = (elementosLinha > maisElementosLinha) ? elementosLinha : maisElementosLinha;
+                                         elementosLinha = 0; }
+#line 1656 "sintatico.yy.cc"
+    break;
+
+  case 53: /* RepeatValuesMatrixTwo: COMMA L_SQUARE_BRACKET Sinal ValorIntOrFloat $@5 RepeatValuesMatrixOne R_SQUARE_BRACKET $@6 RepeatValuesMatrixTwo  */
+#line 213 "sintatico.y"
+                                                                                     {}
+#line 1662 "sintatico.yy.cc"
+    break;
+
+  case 54: /* RepeatValuesMatrixTwo: %empty  */
+#line 214 "sintatico.y"
+                       {}
+#line 1668 "sintatico.yy.cc"
+    break;
+
+  case 55: /* Integral: INTEGRATE L_PAREN IntegralAux R_PAREN SEMICOLON  */
+#line 219 "sintatico.y"
+                                                          {}
+#line 1674 "sintatico.yy.cc"
+    break;
+
+  case 56: /* IntegralAux: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat COMMA Funcao_Integral  */
+#line 221 "sintatico.y"
+                                                                                     { integrate((yyvsp[-6].inteiro)*(yyvsp[-5].real), (yyvsp[-3].inteiro)*(yyvsp[-2].real), AST,hashTable); /*Delete_Tree(AST);*/}
+#line 1680 "sintatico.yy.cc"
+    break;
+
+  case 57: /* Expressao_matematica_Direta: Funcao_Integral  */
+#line 225 "sintatico.y"
+                                             {printarExpressao();}
+#line 1686 "sintatico.yy.cc"
+    break;
+
+  case 58: /* Funcao_Integral: Integral_aux  */
+#line 228 "sintatico.y"
+                              { AST = (yyvsp[0].ast); if(!dont_worry){valorExp = calculate_Exp(AST, hashTable);} }
+#line 1692 "sintatico.yy.cc"
+    break;
+
+  case 59: /* Integral_aux: Integral_DivMul  */
+#line 231 "sintatico.y"
+                              { (yyval.ast) = (yyvsp[0].ast);}
+#line 1698 "sintatico.yy.cc"
+    break;
+
+  case 60: /* Integral_aux: Integral_aux PLUS Integral_DivMul  */
+#line 233 "sintatico.y"
                                           {     TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                 aux->node_type = ADD;
                                                 aux->value = 0;
@@ -1644,11 +1707,11 @@ yyreduce:
                                                 aux->right = (yyvsp[0].ast);
                                                 (yyval.ast) = aux;
                                         }
-#line 1648 "sintatico.yy.cc"
+#line 1711 "sintatico.yy.cc"
     break;
 
-  case 48: /* Integral_aux: Integral_aux MINUS Integral_DivMul  */
-#line 203 "sintatico.y"
+  case 61: /* Integral_aux: Integral_aux MINUS Integral_DivMul  */
+#line 242 "sintatico.y"
                                          {      TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                 aux->node_type = SUB;
                                                 aux->value = 0;
@@ -1657,17 +1720,17 @@ yyreduce:
                                                 aux->right = (yyvsp[0].ast);
                                                 (yyval.ast) = aux;
                                         }
-#line 1661 "sintatico.yy.cc"
+#line 1724 "sintatico.yy.cc"
     break;
 
-  case 49: /* Integral_DivMul: Integral_Complemento  */
-#line 212 "sintatico.y"
+  case 62: /* Integral_DivMul: Integral_Complemento  */
+#line 251 "sintatico.y"
                                       { (yyval.ast) = (yyvsp[0].ast);}
-#line 1667 "sintatico.yy.cc"
+#line 1730 "sintatico.yy.cc"
     break;
 
-  case 50: /* Integral_DivMul: Integral_DivMul MULTIPLY Integral_Complemento  */
-#line 213 "sintatico.y"
+  case 63: /* Integral_DivMul: Integral_DivMul MULTIPLY Integral_Complemento  */
+#line 252 "sintatico.y"
                                                         {       TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                                 aux->node_type = MUL;
                                                                 aux->value = 0;
@@ -1676,11 +1739,11 @@ yyreduce:
                                                                 aux->right = (yyvsp[0].ast);
                                                                 (yyval.ast) = aux;
                                                         }
-#line 1680 "sintatico.yy.cc"
+#line 1743 "sintatico.yy.cc"
     break;
 
-  case 51: /* Integral_DivMul: Integral_DivMul DIV Integral_Complemento  */
-#line 222 "sintatico.y"
+  case 64: /* Integral_DivMul: Integral_DivMul DIV Integral_Complemento  */
+#line 261 "sintatico.y"
                                                     {   TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                         aux->node_type = DI;
                                                         aux->value = 0;
@@ -1689,11 +1752,11 @@ yyreduce:
                                                         aux->right = (yyvsp[0].ast);
                                                         (yyval.ast) = aux;
                                                         }
-#line 1693 "sintatico.yy.cc"
+#line 1756 "sintatico.yy.cc"
     break;
 
-  case 52: /* Integral_Complemento: Sinal ValorIntOrFloat  */
-#line 232 "sintatico.y"
+  case 65: /* Integral_Complemento: Sinal ValorIntOrFloat  */
+#line 271 "sintatico.y"
                                              { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                 aux->node_type = NUMBER;
                                                 aux->value = (yyvsp[-1].inteiro)*(yyvsp[0].real);
@@ -1703,17 +1766,17 @@ yyreduce:
                                                 aux->right = NULL;
                                                 (yyval.ast) = (TreeNode*) aux;
                                                 }
-#line 1707 "sintatico.yy.cc"
+#line 1770 "sintatico.yy.cc"
     break;
 
-  case 53: /* $@1: %empty  */
-#line 242 "sintatico.y"
+  case 66: /* $@7: %empty  */
+#line 281 "sintatico.y"
                          {str_aux  = strdup((yyvsp[0].string_id)); }
-#line 1713 "sintatico.yy.cc"
+#line 1776 "sintatico.yy.cc"
     break;
 
-  case 54: /* Integral_Complemento: Sinal IDENTIFIER $@1 continua_id  */
-#line 242 "sintatico.y"
+  case 67: /* Integral_Complemento: Sinal IDENTIFIER $@7 continua_id  */
+#line 281 "sintatico.y"
                                                                {   
                                         
                                         TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
@@ -1725,21 +1788,23 @@ yyreduce:
                                         aux->value = (yyvsp[-3].inteiro)*(*(static_cast<float*>(hashTable.search(str))));
                                         }else if(hashTable.getType(str)== 1){
                                                 aux->value = 0;
-                                                
-                                                //multiplyMatrixByScalar(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str))), $1);
-                                                
+                                                multiplyMatrixByScalar(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str))), (yyvsp[-3].inteiro));
                                                 matriz_exp = true;
+                                                // if((*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str)))).size() == 2){
+                                                //         return CONTINUE_VALUE;
+                                                // }
+
                                         }
                                         aux->name = str;
                                         aux->left = NULL;
                                         aux->right = NULL;
                                         (yyval.ast) = (TreeNode*) aux; 
                         }
-#line 1739 "sintatico.yy.cc"
+#line 1804 "sintatico.yy.cc"
     break;
 
-  case 55: /* Integral_Complemento: COS L_PAREN Integral_Complemento R_PAREN  */
-#line 264 "sintatico.y"
+  case 68: /* Integral_Complemento: COS L_PAREN Integral_Complemento R_PAREN  */
+#line 305 "sintatico.y"
                                                    {    TreeNode* cosNode = (TreeNode*)malloc(sizeof(struct node));
                                                         
                                                         cosNode->node_type = COS_NODE;
@@ -1749,11 +1814,11 @@ yyreduce:
                                                         cosNode->right = NULL;
                                                         (yyval.ast) = (TreeNode*) cosNode;
                                                 }
-#line 1753 "sintatico.yy.cc"
+#line 1818 "sintatico.yy.cc"
     break;
 
-  case 56: /* Integral_Complemento: SEN L_PAREN Integral_Complemento R_PAREN  */
-#line 274 "sintatico.y"
+  case 69: /* Integral_Complemento: SEN L_PAREN Integral_Complemento R_PAREN  */
+#line 315 "sintatico.y"
                                                    {    TreeNode* senNode = (TreeNode*)malloc(sizeof(struct node));
                                                         senNode->node_type = SEN_NODE;
                                                         senNode->value = 0;
@@ -1762,11 +1827,11 @@ yyreduce:
                                                         senNode->right = NULL;
                                                         (yyval.ast) = (TreeNode*) senNode;
                                                 }
-#line 1766 "sintatico.yy.cc"
+#line 1831 "sintatico.yy.cc"
     break;
 
-  case 57: /* Integral_Complemento: TAN L_PAREN Integral_Complemento R_PAREN  */
-#line 282 "sintatico.y"
+  case 70: /* Integral_Complemento: TAN L_PAREN Integral_Complemento R_PAREN  */
+#line 323 "sintatico.y"
                                                    {    TreeNode* tanNode = (TreeNode*)malloc(sizeof(struct node));
                                                         tanNode->node_type = TAN_NODE;
                                                         tanNode->value = 0;
@@ -1775,11 +1840,11 @@ yyreduce:
                                                         tanNode->right = NULL;
                                                         (yyval.ast) = (TreeNode*) tanNode;
                                                 }
-#line 1779 "sintatico.yy.cc"
+#line 1844 "sintatico.yy.cc"
     break;
 
-  case 58: /* Integral_Complemento: X  */
-#line 291 "sintatico.y"
+  case 71: /* Integral_Complemento: X  */
+#line 332 "sintatico.y"
           {     TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                 aux->node_type = X_NODE;
                                 aux->value = 0;
@@ -1787,13 +1852,13 @@ yyreduce:
                                                         aux->name = "cos";
                                 aux->left = NULL;
                                 aux->right = NULL;
-                                (yyval.ast) = (TreeNode*) aux;
+                                (yyval.ast) = (TreeNode*) aux; 
                         }
-#line 1793 "sintatico.yy.cc"
+#line 1858 "sintatico.yy.cc"
     break;
 
-  case 59: /* Integral_Complemento: ABS L_PAREN Integral_Complemento R_PAREN  */
-#line 301 "sintatico.y"
+  case 72: /* Integral_Complemento: ABS L_PAREN Integral_Complemento R_PAREN  */
+#line 342 "sintatico.y"
                                                  {      TreeNode* absNode = (TreeNode*)malloc(sizeof(struct node));
                                                         absNode->node_type = ABS_NODE;
                                                         absNode->value = 0;
@@ -1802,17 +1867,17 @@ yyreduce:
                                                         absNode->right = NULL;
                                                         (yyval.ast) = (TreeNode*) absNode;
                                                 }
-#line 1806 "sintatico.yy.cc"
+#line 1871 "sintatico.yy.cc"
     break;
 
-  case 60: /* Integral_Complemento: L_PAREN Integral_aux R_PAREN  */
-#line 310 "sintatico.y"
+  case 73: /* Integral_Complemento: L_PAREN Integral_aux R_PAREN  */
+#line 351 "sintatico.y"
                                        {(yyval.ast) = (yyvsp[-1].ast);}
-#line 1812 "sintatico.yy.cc"
+#line 1877 "sintatico.yy.cc"
     break;
 
-  case 61: /* Integral_Complemento: PI  */
-#line 312 "sintatico.y"
+  case 74: /* Integral_Complemento: PI  */
+#line 353 "sintatico.y"
            { TreeNode* piNode = (TreeNode*)malloc(sizeof(struct node));
             piNode->node_type = NUMBER;
             piNode->value = M_PI;
@@ -1821,11 +1886,11 @@ yyreduce:
             piNode->right = NULL;
             (yyval.ast) = (TreeNode*) piNode;
             }
-#line 1825 "sintatico.yy.cc"
+#line 1890 "sintatico.yy.cc"
     break;
 
-  case 62: /* Integral_Complemento: E  */
-#line 321 "sintatico.y"
+  case 75: /* Integral_Complemento: E  */
+#line 362 "sintatico.y"
           { TreeNode* eNode = (TreeNode*)malloc(sizeof(struct node));
             eNode->node_type = NUMBER;
             eNode->value = M_E;
@@ -1834,184 +1899,66 @@ yyreduce:
             eNode->right = NULL;
             (yyval.ast) = (TreeNode*) eNode;
             }
-#line 1838 "sintatico.yy.cc"
+#line 1903 "sintatico.yy.cc"
     break;
 
-  case 63: /* Sum: SUM L_PAREN IDENTIFIER COMMA NUM_INTEGER COLON NUM_INTEGER COMMA Funcao_Integral R_PAREN SEMICOLON  */
-#line 333 "sintatico.y"
-                                                                                                        {somatorio((yyvsp[-8].string_id), (yyvsp[-6].inteiro), (yyvsp[-4].inteiro), AST,hashTable); /*Delete_Tree(AST);*/}
-#line 1844 "sintatico.yy.cc"
+  case 76: /* $@8: %empty  */
+#line 371 "sintatico.y"
+                      {str_aux2 = str_aux;}
+#line 1909 "sintatico.yy.cc"
     break;
 
-  case 64: /* Matrix: MATRIX EQUAL ChamaCreateMatrix  */
-#line 336 "sintatico.y"
-                                       {}
-#line 1850 "sintatico.yy.cc"
+  case 77: /* continua_id: ATRIBUTE $@8 continua_atribute  */
+#line 371 "sintatico.y"
+                                                              {}
+#line 1915 "sintatico.yy.cc"
     break;
 
-  case 65: /* Matrix: SHOW MATRIX SEMICOLON  */
-#line 337 "sintatico.y"
-                                { showMatriz(); return CONTINUE_VALUE;}
-#line 1856 "sintatico.yy.cc"
+  case 78: /* continua_id: SEMICOLON EOL  */
+#line 372 "sintatico.y"
+                        {printValorSimbolo(str_aux, hashTable);  matriz_exp = false; return CONTINUE_VALUE;}
+#line 1921 "sintatico.yy.cc"
     break;
 
-  case 66: /* Matrix: SOLVE DETERMINANT SEMICOLON  */
-#line 338 "sintatico.y"
-                                    { determinanteMatriz(); return CONTINUE_VALUE;}
-#line 1862 "sintatico.yy.cc"
+  case 79: /* continua_id: %empty  */
+#line 373 "sintatico.y"
+          { }
+#line 1927 "sintatico.yy.cc"
     break;
 
-  case 67: /* Matrix: SOLVE LINEAR_SYSTEM SEMICOLON  */
-#line 339 "sintatico.y"
-                                      { solveLinearSystem();  return CONTINUE_VALUE;}
-#line 1868 "sintatico.yy.cc"
-    break;
-
-  case 68: /* ChamaCreateMatrix: CreateMatrix  */
-#line 341 "sintatico.y"
-                                {  
-                                
-                                 matriz_global = createMatriz(listMatriz,elemtsPlinha,maisElementosLinha); elementosLinha = 0; maisElementosLinha = 0;
- /* destruir listas aqui */ }
-#line 1877 "sintatico.yy.cc"
-    break;
-
-  case 69: /* CreateMatrix: L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON  */
-#line 347 "sintatico.y"
-                                                                          {}
-#line 1883 "sintatico.yy.cc"
-    break;
-
-  case 70: /* $@2: %empty  */
-#line 349 "sintatico.y"
-                                                        { elementosLinha++; listMatriz.push_back((yyvsp[-1].inteiro)*(yyvsp[0].real)); }
-#line 1889 "sintatico.yy.cc"
-    break;
-
-  case 71: /* $@3: %empty  */
-#line 350 "sintatico.y"
-                                                 { elemtsPlinha.push_back(elementosLinha); maisElementosLinha = (elementosLinha > maisElementosLinha) ? elementosLinha : maisElementosLinha;
-                                         elementosLinha = 0; }
-#line 1896 "sintatico.yy.cc"
-    break;
-
-  case 72: /* CreateMatrixAux: L_SQUARE_BRACKET Sinal ValorIntOrFloat $@2 RepeatValuesMatrixOne R_SQUARE_BRACKET $@3 RepeatValuesMatrixTwo  */
-#line 351 "sintatico.y"
-                                                                                    { }
-#line 1902 "sintatico.yy.cc"
-    break;
-
-  case 73: /* $@4: %empty  */
-#line 353 "sintatico.y"
-                                                   {elementosLinha++; listMatriz.push_back((yyvsp[-1].inteiro)*(yyvsp[0].real)); }
-#line 1908 "sintatico.yy.cc"
-    break;
-
-  case 74: /* RepeatValuesMatrixOne: COMMA Sinal ValorIntOrFloat $@4 RepeatValuesMatrixOne  */
-#line 353 "sintatico.y"
-                                                                                                                           {}
-#line 1914 "sintatico.yy.cc"
-    break;
-
-  case 75: /* RepeatValuesMatrixOne: %empty  */
-#line 354 "sintatico.y"
-                      {}
-#line 1920 "sintatico.yy.cc"
-    break;
-
-  case 76: /* $@5: %empty  */
-#line 356 "sintatico.y"
-                                                                    {elementosLinha++; listMatriz.push_back((yyvsp[-1].inteiro)*(yyvsp[0].real));  }
-#line 1926 "sintatico.yy.cc"
-    break;
-
-  case 77: /* $@6: %empty  */
-#line 357 "sintatico.y"
-                                                { elemtsPlinha.push_back(elementosLinha); maisElementosLinha = (elementosLinha > maisElementosLinha) ? elementosLinha : maisElementosLinha;
-                                         elementosLinha = 0; }
+  case 80: /* continua_atribute: Expressao_matematica SEMICOLON EOL  */
+#line 375 "sintatico.y"
+                                                      { AtribuirValor(); return CONTINUE_VALUE;}
 #line 1933 "sintatico.yy.cc"
     break;
 
-  case 78: /* RepeatValuesMatrixTwo: COMMA L_SQUARE_BRACKET Sinal ValorIntOrFloat $@5 RepeatValuesMatrixOne R_SQUARE_BRACKET $@6 RepeatValuesMatrixTwo  */
-#line 358 "sintatico.y"
-                                                                                     {}
-#line 1939 "sintatico.yy.cc"
+  case 81: /* continua_atribute: ChamaCreateMatrix EOL  */
+#line 377 "sintatico.y"
+                                        {sinal = 1; hashTable.insert(str,matriz_global);
+                /*Delete_Tree(AST);*/ not_existId = false; matriz_exp = false; return CONTINUE_VALUE;}
+#line 1940 "sintatico.yy.cc"
     break;
 
-  case 79: /* RepeatValuesMatrixTwo: %empty  */
-#line 359 "sintatico.y"
-                       {}
-#line 1945 "sintatico.yy.cc"
-    break;
-
-  case 80: /* ManipulacaoSimbolos: SHOW SYMBOLS SEMICOLON  */
-#line 365 "sintatico.y"
-                                            { hashTable.printAll();}
-#line 1951 "sintatico.yy.cc"
-    break;
-
-  case 81: /* $@7: %empty  */
-#line 368 "sintatico.y"
-                      {str_aux2 = str_aux;}
-#line 1957 "sintatico.yy.cc"
-    break;
-
-  case 82: /* continua_id: ATRIBUTE $@7 continua_atribute  */
-#line 368 "sintatico.y"
-                                                              {}
-#line 1963 "sintatico.yy.cc"
-    break;
-
-  case 83: /* continua_id: SEMICOLON EOL  */
-#line 369 "sintatico.y"
-                        {printValorSimbolo(str_aux, hashTable);  matriz_exp = false; return CONTINUE_VALUE;}
-#line 1969 "sintatico.yy.cc"
-    break;
-
-  case 84: /* continua_id: %empty  */
-#line 370 "sintatico.y"
-          { }
-#line 1975 "sintatico.yy.cc"
-    break;
-
-  case 85: /* continua_atribute: Expressao_matematica SEMICOLON EOL  */
-#line 372 "sintatico.y"
-                                                      { sinal = 1; if(!not_existId){hashTable.insert(str_aux2,valorExp);} not_existId = false; /*Delete_Tree(AST);*/; return CONTINUE_VALUE;}
-#line 1981 "sintatico.yy.cc"
-    break;
-
-  case 86: /* continua_atribute: ChamaCreateMatrix EOL  */
-#line 373 "sintatico.y"
-                                        {sinal = 1; hashTable.insert(str,matriz_global);/*Delete_Tree(AST);*/ not_existId = false; matriz_exp = false; return CONTINUE_VALUE;}
-#line 1987 "sintatico.yy.cc"
-    break;
-
-  case 87: /* Expressao_matematica_Direta: Funcao_Integral  */
-#line 380 "sintatico.y"
-                                             {if(!not_existId && !matriz_exp){printValorCalculoExp(valorExp);} matriz_exp =false; not_existId = false; /*Delete_Tree(AST);*/}
-#line 1993 "sintatico.yy.cc"
-    break;
-
-  case 88: /* Expressao_matematica: %empty  */
-#line 386 "sintatico.y"
+  case 82: /* Expressao_matematica: %empty  */
+#line 384 "sintatico.y"
                       {}
-#line 1999 "sintatico.yy.cc"
+#line 1946 "sintatico.yy.cc"
     break;
 
-  case 89: /* Expressao_matematica: Expressao_matematica Exp_aux  */
+  case 83: /* Expressao_matematica: Expressao_matematica Exp_aux  */
+#line 385 "sintatico.y"
+                                                     { AST = (yyvsp[0].ast); if(!not_existId && !matriz_exp){valorExp = calculate_Exp(AST, hashTable); }else if(!not_existId && matriz_exp){ matriz_exp_global = solve_Matriz_expressao(AST, hashTable); }  }
+#line 1952 "sintatico.yy.cc"
+    break;
+
+  case 84: /* Exp_aux: Exp_DivMul  */
 #line 387 "sintatico.y"
-                                                     { AST = (yyvsp[0].ast); if(!not_existId) {valorExp = calculate_Exp(AST, hashTable); } not_existId = false; }
-#line 2005 "sintatico.yy.cc"
-    break;
-
-  case 90: /* Exp_aux: Exp_DivMul  */
-#line 389 "sintatico.y"
                     {  (yyval.ast) = (yyvsp[0].ast);}
-#line 2011 "sintatico.yy.cc"
+#line 1958 "sintatico.yy.cc"
     break;
 
-  case 91: /* Exp_aux: Exp_aux PLUS Exp_DivMul  */
-#line 390 "sintatico.y"
+  case 85: /* Exp_aux: Exp_aux PLUS Exp_DivMul  */
+#line 388 "sintatico.y"
                               {     TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                 aux->node_type = ADD;
                                                 aux->value = 0;
@@ -2019,120 +1966,124 @@ yyreduce:
                                                 aux->right = (yyvsp[0].ast);
                                                 (yyval.ast) = aux;  
                                         }
-#line 2023 "sintatico.yy.cc"
+#line 1970 "sintatico.yy.cc"
     break;
 
-  case 92: /* Exp_aux: Exp_aux MINUS Exp_DivMul  */
-#line 398 "sintatico.y"
+  case 86: /* Exp_aux: Exp_aux MINUS Exp_DivMul  */
+#line 396 "sintatico.y"
                                {   TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                 aux->node_type = SUB;
                                                 aux->value = 0;
                                                 aux->left = (yyvsp[-2].ast);
                                                 aux->right = (yyvsp[0].ast);
                                                 (yyval.ast) = aux;}
-#line 2034 "sintatico.yy.cc"
+#line 1981 "sintatico.yy.cc"
     break;
 
-  case 93: /* Exp_DivMul: Exp_Complemento  */
-#line 405 "sintatico.y"
+  case 87: /* Exp_DivMul: Exp_Complemento  */
+#line 403 "sintatico.y"
                             { (yyval.ast) = (yyvsp[0].ast); }
-#line 2040 "sintatico.yy.cc"
+#line 1987 "sintatico.yy.cc"
     break;
 
-  case 94: /* Exp_DivMul: Exp_DivMul MULTIPLY Exp_Complemento  */
-#line 406 "sintatico.y"
+  case 88: /* Exp_DivMul: Exp_DivMul MULTIPLY Exp_Complemento  */
+#line 404 "sintatico.y"
                                               {    TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                                 aux->node_type = MUL;
                                                                 aux->value = 0;
                                                                 aux->left = (yyvsp[-2].ast);
                                                                 aux->right = (yyvsp[0].ast);
                                                                 (yyval.ast) = aux;}
-#line 2051 "sintatico.yy.cc"
+#line 1998 "sintatico.yy.cc"
     break;
 
-  case 95: /* Exp_DivMul: Exp_DivMul DIV Exp_Complemento  */
-#line 413 "sintatico.y"
+  case 89: /* Exp_DivMul: Exp_DivMul DIV Exp_Complemento  */
+#line 411 "sintatico.y"
                                          { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                         aux->node_type = DI;
                                                         aux->value = 0;
                                                         aux->left = (yyvsp[-2].ast);
                                                         aux->right = (yyvsp[0].ast);
                                                         (yyval.ast) = aux;}
-#line 2062 "sintatico.yy.cc"
+#line 2009 "sintatico.yy.cc"
     break;
 
-  case 96: /* Exp_Complemento: Sinal ValorIntOrFloat  */
-#line 421 "sintatico.y"
+  case 90: /* Exp_Complemento: Sinal ValorIntOrFloat  */
+#line 419 "sintatico.y"
                                        { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                 aux->node_type = NUMBER;
                                                 aux->value = (yyvsp[-1].inteiro)*(yyvsp[0].real);
                                                 aux->left = NULL;
                                                 aux->right = NULL;
                                                 (yyval.ast) = (TreeNode*) aux; }
-#line 2073 "sintatico.yy.cc"
+#line 2020 "sintatico.yy.cc"
     break;
 
-  case 97: /* Exp_Complemento: Sinal IDENTIFIER  */
-#line 428 "sintatico.y"
+  case 91: /* Exp_Complemento: Sinal IDENTIFIER  */
+#line 426 "sintatico.y"
                             {TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                         aux->node_type = IDENTIFIER_NODE;
                                         if(hashTable.search(str) == NULL){
                                                 aux->value = 0;
-                                        }else{
-
+                                        } else if(hashTable.getType(str)== 0){
                                         aux->value = (yyvsp[-1].inteiro)*(*(static_cast<float*>(hashTable.search(str))));
+                                        }else if(hashTable.getType(str)== 1){
+                                                aux->value = 0;
+                                                multiplyMatrixByScalar(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str))), (yyvsp[-1].inteiro));
+                                                matriz_exp = true;
+                                                
                                         }
                                        
                                         aux->name = str;
                                         aux->left = NULL;
                                         aux->right = NULL;
                                         (yyval.ast) = (TreeNode*) aux; }
-#line 2091 "sintatico.yy.cc"
+#line 2042 "sintatico.yy.cc"
     break;
 
-  case 98: /* Exp_Complemento: COS L_PAREN Exp_Complemento R_PAREN  */
-#line 442 "sintatico.y"
+  case 92: /* Exp_Complemento: COS L_PAREN Exp_Complemento R_PAREN  */
+#line 444 "sintatico.y"
                                               {  TreeNode* cosNode = (TreeNode*)malloc(sizeof(struct node));
                                                         cosNode->node_type = COS_NODE;
                                                         cosNode->left = (yyvsp[-1].ast); // AST do complemento
                                                         cosNode->right = NULL;
                                                         (yyval.ast) = (TreeNode*) cosNode;}
-#line 2101 "sintatico.yy.cc"
+#line 2052 "sintatico.yy.cc"
     break;
 
-  case 99: /* Exp_Complemento: SEN L_PAREN Exp_Complemento R_PAREN  */
-#line 447 "sintatico.y"
+  case 93: /* Exp_Complemento: SEN L_PAREN Exp_Complemento R_PAREN  */
+#line 449 "sintatico.y"
                                               {  TreeNode* senNode = (TreeNode*)malloc(sizeof(struct node));
                                                         senNode->node_type = SEN_NODE;
                                                         senNode->left = (yyvsp[-1].ast); // AST do complemento
                                                         senNode->right = NULL;
                                                         (yyval.ast) = (TreeNode*) senNode;}
-#line 2111 "sintatico.yy.cc"
+#line 2062 "sintatico.yy.cc"
     break;
 
-  case 100: /* Exp_Complemento: TAN L_PAREN Exp_Complemento R_PAREN  */
-#line 452 "sintatico.y"
+  case 94: /* Exp_Complemento: TAN L_PAREN Exp_Complemento R_PAREN  */
+#line 454 "sintatico.y"
                                               { TreeNode* tanNode = (TreeNode*)malloc(sizeof(struct node));
                                                         tanNode->node_type = TAN_NODE;
                                                         tanNode->left = (yyvsp[-1].ast); // AST do complemento
                                                         tanNode->right = NULL;
                                                         (yyval.ast) = (TreeNode*) tanNode; }
-#line 2121 "sintatico.yy.cc"
+#line 2072 "sintatico.yy.cc"
     break;
 
-  case 101: /* Exp_Complemento: X  */
-#line 457 "sintatico.y"
+  case 95: /* Exp_Complemento: X  */
+#line 459 "sintatico.y"
             { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                 aux->node_type = X_NODE;
                                 aux->value = 0;
                                 aux->left = NULL;
                                 aux->right = NULL;
                                 (yyval.ast) = (TreeNode*) aux; }
-#line 2132 "sintatico.yy.cc"
+#line 2083 "sintatico.yy.cc"
     break;
 
-  case 102: /* Exp_Complemento: PI  */
-#line 463 "sintatico.y"
+  case 96: /* Exp_Complemento: PI  */
+#line 465 "sintatico.y"
              { TreeNode* piNode = (TreeNode*)malloc(sizeof(struct node));
             piNode->node_type = NUMBER;
             piNode->value = M_PI;
@@ -2140,11 +2091,11 @@ yyreduce:
             piNode->right = NULL;
             (yyval.ast) = (TreeNode*) piNode;
             }
-#line 2144 "sintatico.yy.cc"
+#line 2095 "sintatico.yy.cc"
     break;
 
-  case 103: /* Exp_Complemento: E  */
-#line 471 "sintatico.y"
+  case 97: /* Exp_Complemento: E  */
+#line 473 "sintatico.y"
           { TreeNode* eNode = (TreeNode*)malloc(sizeof(struct node));
             eNode->node_type = NUMBER;
             eNode->value = M_E;
@@ -2152,93 +2103,27 @@ yyreduce:
             eNode->right = NULL;
             (yyval.ast) = (TreeNode*) eNode;
             }
-#line 2156 "sintatico.yy.cc"
+#line 2107 "sintatico.yy.cc"
     break;
 
-  case 104: /* Exp_Complemento: ABS L_PAREN Exp_Complemento R_PAREN  */
-#line 478 "sintatico.y"
+  case 98: /* Exp_Complemento: ABS L_PAREN Exp_Complemento R_PAREN  */
+#line 480 "sintatico.y"
                                               { TreeNode* absNode = (TreeNode*)malloc(sizeof(struct node));
                                                         absNode->node_type = ABS_NODE;
                                                         absNode->left = (yyvsp[-1].ast); // AST do complemento
                                                         absNode->right = NULL;
                                                         (yyval.ast) = (TreeNode*) absNode; }
-#line 2166 "sintatico.yy.cc"
+#line 2117 "sintatico.yy.cc"
     break;
 
-  case 105: /* Exp_Complemento: L_PAREN Exp_aux R_PAREN  */
-#line 483 "sintatico.y"
+  case 99: /* Exp_Complemento: L_PAREN Exp_aux R_PAREN  */
+#line 485 "sintatico.y"
                                   { (yyval.ast) = (yyvsp[-1].ast); }
-#line 2172 "sintatico.yy.cc"
-    break;
-
-  case 106: /* Funcoes: COS  */
-#line 488 "sintatico.y"
-             {}
-#line 2178 "sintatico.yy.cc"
-    break;
-
-  case 107: /* Funcoes: SEN  */
-#line 489 "sintatico.y"
-              {}
-#line 2184 "sintatico.yy.cc"
-    break;
-
-  case 108: /* Funcoes: TAN  */
-#line 490 "sintatico.y"
-              {}
-#line 2190 "sintatico.yy.cc"
-    break;
-
-  case 109: /* OperadoresBinarios: PLUS  */
-#line 492 "sintatico.y"
-                         {(yyval.inteiro) = 1;}
-#line 2196 "sintatico.yy.cc"
-    break;
-
-  case 110: /* OperadoresBinarios: MINUS  */
-#line 493 "sintatico.y"
-                            {(yyval.inteiro) = -1;}
-#line 2202 "sintatico.yy.cc"
-    break;
-
-  case 111: /* OperadoresBinarios: MULTIPLY  */
-#line 494 "sintatico.y"
-                               {}
-#line 2208 "sintatico.yy.cc"
-    break;
-
-  case 112: /* OperadoresBinarios: DIV  */
-#line 495 "sintatico.y"
-                          {}
-#line 2214 "sintatico.yy.cc"
-    break;
-
-  case 113: /* OperadoresBinarios: POW  */
-#line 496 "sintatico.y"
-                          {}
-#line 2220 "sintatico.yy.cc"
-    break;
-
-  case 114: /* OperadoresBinarios: REMAINDER  */
-#line 497 "sintatico.y"
-                                {}
-#line 2226 "sintatico.yy.cc"
-    break;
-
-  case 115: /* Constantes: PI  */
-#line 500 "sintatico.y"
-               {(yyval.real) = M_PI;}
-#line 2232 "sintatico.yy.cc"
-    break;
-
-  case 116: /* Constantes: E  */
-#line 501 "sintatico.y"
-                {(yyval.real) = M_E;}
-#line 2238 "sintatico.yy.cc"
+#line 2123 "sintatico.yy.cc"
     break;
 
 
-#line 2242 "sintatico.yy.cc"
+#line 2127 "sintatico.yy.cc"
 
       default: break;
     }
@@ -2431,7 +2316,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 507 "sintatico.y"
+#line 508 "sintatico.y"
 
 
 void yyerror(char *s) {
@@ -2453,4 +2338,43 @@ int main(int argc, char** argv)
     
     printf("SUCCESSFUL COMPILATION.");
     return 0;
+}
+
+void printarExpressao(){
+        if(!not_existId && !matriz_exp)
+        {
+                printValorCalculoExp(valorExp);
+
+        }else if(!not_existId && matriz_exp){
+                matriz_exp_global = solve_Matriz_expressao(AST, hashTable); 
+                if(!break_matriz){
+                printMatriz(matriz_exp_global);
+                }else{
+                        break_matriz = false;
+                }
+        } 
+
+        matriz_exp =false; 
+        not_existId = false; 
+        /*Delete_Tree(AST);*/
+}
+
+void AtribuirValor(){
+         sinal = 1; 
+         if(!not_existId && !matriz_exp){
+
+                hashTable.insert(str_aux2,valorExp);
+
+        }else if(!not_existId && matriz_exp){
+                if(!break_matriz){
+
+                hashTable.insert(str_aux2,matriz_exp_global);
+
+                }else{
+                        break_matriz = false;
+                }
+
+        } 
+        not_existId = false; 
+        matriz_exp = false; 
 }

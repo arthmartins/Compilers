@@ -21,6 +21,8 @@ extern void yylex_destroy(void);
 
 extern bool not_existId;
 bool matriz_exp = false;
+extern bool break_matriz;
+bool dont_worry = false;
 
 std::string universal;
 std::string str;
@@ -28,6 +30,8 @@ std::string str_aux;
 std::string str_aux2;
 
 std::vector<std::vector<float>> matriz_global;
+
+std::vector<std::vector<float>> matriz_exp_global;
 
 HashTable hashTable;
 
@@ -40,7 +44,10 @@ float valorExp = 0;
 int sinal = 1;
 
 TreeNode* AST = NULL;
+TreeNode* PLOT_EXP = NULL;
 
+extern void printarExpressao();
+extern void AtribuirValor();
 extern void yyerror(char*); 
 
 %}
@@ -121,6 +128,8 @@ Programa: Comandos EOL {return CONTINUE_VALUE;}
         | Expressao_matematica_Direta EOL {return CONTINUE_VALUE;}
         | EOL {return CONTINUE_VALUE;}
 
+ManipulacaoSimbolos: SHOW SYMBOLS SEMICOLON { hashTable.printAll();}
+
 Comandos: OnlyComandos {}
         | ComandosPlus {}
 
@@ -160,20 +169,12 @@ ComandosPlus: Grafico {}
             | Matrix {}
 
 // --------------------------------------------------------
-Grafico: PLOT InfoPlot SEMICOLON {return CONTINUE_VALUE;}
+Grafico: PLOT InfoPlot SEMICOLON {plotarGrafico(PLOT_EXP, hashTable); dont_worry = false; }
 
 
-InfoPlot: L_PAREN FuncaoPlot R_PAREN {return CONTINUE_VALUE;}
+InfoPlot: L_PAREN {dont_worry = true;} Funcao_Integral R_PAREN {PLOT_EXP = AST; }
         | {}
 
-FuncaoPlot: Funcoes L_PAREN InsideFuncoes R_PAREN {return CONTINUE_VALUE;}
-
-InsideFuncoes: L_PAREN InsideFuncoes R_PAREN InsideFuncoes{}
-            | X InsideFuncoes{}
-            | OperadoresBinarios InsideFuncoes{}
-            | Constantes InsideFuncoes{}
-            | ValorIntOrFloat InsideFuncoes{}
-            | {}
 
 // --------------------------------------------------------
 
@@ -181,12 +182,50 @@ FuncaoRpn: RPN L_PAREN Funcao_Integral R_PAREN SEMICOLON {    RpnFunc(AST); /*De
 
 // --------------------------------------------------------
 
+// ------------------    SUM  -----------------------------
+
+Sum: SUM L_PAREN IDENTIFIER COMMA NUM_INTEGER COLON NUM_INTEGER COMMA Funcao_Integral R_PAREN SEMICOLON {somatorio($3, $5, $7, AST,hashTable); /*Delete_Tree(AST);*/}
+
+
+
+// ---------------   CRIAÇAO MATRIZ   ------------------------------------
+Matrix: MATRIX EQUAL ChamaCreateMatrix {}
+        | SHOW MATRIX SEMICOLON { showMatriz(); return CONTINUE_VALUE;}
+      | SOLVE DETERMINANT SEMICOLON { determinanteMatriz(); return CONTINUE_VALUE;}
+      | SOLVE LINEAR_SYSTEM SEMICOLON { solveLinearSystem();  return CONTINUE_VALUE;}
+
+ChamaCreateMatrix: CreateMatrix {    
+                                 matriz_global = createMatriz(listMatriz,elemtsPlinha,maisElementosLinha); elementosLinha = 0; maisElementosLinha = 0;
+ /* destruir listas aqui */ }
+      
+
+CreateMatrix: L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON {}
+
+CreateMatrixAux: L_SQUARE_BRACKET Sinal ValorIntOrFloat { elementosLinha++; listMatriz.push_back($2*$3); } RepeatValuesMatrixOne 
+                                R_SQUARE_BRACKET { elemtsPlinha.push_back(elementosLinha); maisElementosLinha = (elementosLinha > maisElementosLinha) ? elementosLinha : maisElementosLinha;
+                                         elementosLinha = 0; } RepeatValuesMatrixTwo{ }
+
+RepeatValuesMatrixOne: COMMA Sinal ValorIntOrFloat {elementosLinha++; listMatriz.push_back($2*$3); } RepeatValuesMatrixOne {}
+                    | {}
+
+RepeatValuesMatrixTwo: COMMA L_SQUARE_BRACKET Sinal ValorIntOrFloat {elementosLinha++; listMatriz.push_back($3*$4);  } RepeatValuesMatrixOne 
+                                R_SQUARE_BRACKET{ elemtsPlinha.push_back(elementosLinha); maisElementosLinha = (elementosLinha > maisElementosLinha) ? elementosLinha : maisElementosLinha;
+                                         elementosLinha = 0; } RepeatValuesMatrixTwo {}
+                     | {}           
+
+
+
+
 Integral: INTEGRATE L_PAREN IntegralAux R_PAREN SEMICOLON {}
 
 IntegralAux: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat COMMA Funcao_Integral { integrate($1*$2, $4*$5, AST,hashTable); /*Delete_Tree(AST);*/} // isso pode dar certo
 
 
-Funcao_Integral: Integral_aux { AST = $1; valorExp = calculate_Exp(AST, hashTable); }
+
+Expressao_matematica_Direta: Funcao_Integral {printarExpressao();}
+
+
+Funcao_Integral: Integral_aux { AST = $1; if(!dont_worry){valorExp = calculate_Exp(AST, hashTable);} }
 
 
 Integral_aux: Integral_DivMul { $$ = $1;}
@@ -250,10 +289,12 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
                                         aux->value = $1*(*(static_cast<float*>(hashTable.search(str))));
                                         }else if(hashTable.getType(str)== 1){
                                                 aux->value = 0;
-                                                
-                                                //multiplyMatrixByScalar(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str))), $1);
-                                                
+                                                multiplyMatrixByScalar(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str))), $1);
                                                 matriz_exp = true;
+                                                // if((*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str)))).size() == 2){
+                                                //         return CONTINUE_VALUE;
+                                                // }
+
                                         }
                                         aux->name = str;
                                         aux->left = NULL;
@@ -295,7 +336,7 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
                                                         aux->name = "cos";
                                 aux->left = NULL;
                                 aux->right = NULL;
-                                $$ = (TreeNode*) aux;
+                                $$ = (TreeNode*) aux; 
                         }
 
       | ABS L_PAREN Integral_Complemento R_PAREN {      TreeNode* absNode = (TreeNode*)malloc(sizeof(struct node));
@@ -327,64 +368,21 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
             $$ = (TreeNode*) eNode;
             }
 
-
-// --------------------------------------------------------
-
-Sum: SUM L_PAREN IDENTIFIER COMMA NUM_INTEGER COLON NUM_INTEGER COMMA Funcao_Integral R_PAREN SEMICOLON {somatorio($3, $5, $7, AST,hashTable); /*Delete_Tree(AST);*/}
-
-// --------------------------------------------------------
-Matrix: MATRIX EQUAL ChamaCreateMatrix {}
-        | SHOW MATRIX SEMICOLON { showMatriz(); return CONTINUE_VALUE;}
-      | SOLVE DETERMINANT SEMICOLON { determinanteMatriz(); return CONTINUE_VALUE;}
-      | SOLVE LINEAR_SYSTEM SEMICOLON { solveLinearSystem();  return CONTINUE_VALUE;}
-
-ChamaCreateMatrix: CreateMatrix {  
-                                
-                                 matriz_global = createMatriz(listMatriz,elemtsPlinha,maisElementosLinha); elementosLinha = 0; maisElementosLinha = 0;
- /* destruir listas aqui */ }
-      
-
-CreateMatrix: L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON {}
-
-CreateMatrixAux: L_SQUARE_BRACKET Sinal ValorIntOrFloat { elementosLinha++; listMatriz.push_back($2*$3); } RepeatValuesMatrixOne 
-                                R_SQUARE_BRACKET { elemtsPlinha.push_back(elementosLinha); maisElementosLinha = (elementosLinha > maisElementosLinha) ? elementosLinha : maisElementosLinha;
-                                         elementosLinha = 0; } RepeatValuesMatrixTwo{ }
-
-RepeatValuesMatrixOne: COMMA Sinal ValorIntOrFloat {elementosLinha++; listMatriz.push_back($2*$3); } RepeatValuesMatrixOne {}
-                    | {}
-
-RepeatValuesMatrixTwo: COMMA L_SQUARE_BRACKET Sinal ValorIntOrFloat {elementosLinha++; listMatriz.push_back($3*$4);  } RepeatValuesMatrixOne 
-                                R_SQUARE_BRACKET{ elemtsPlinha.push_back(elementosLinha); maisElementosLinha = (elementosLinha > maisElementosLinha) ? elementosLinha : maisElementosLinha;
-                                         elementosLinha = 0; } RepeatValuesMatrixTwo {}
-                     | {}           
-
-// ----------------   2   ----------------------------------------
-
-
-
-ManipulacaoSimbolos: SHOW SYMBOLS SEMICOLON { hashTable.printAll();}
-                   
-
 continua_id: ATRIBUTE {str_aux2 = str_aux;} continua_atribute {}
         | SEMICOLON EOL {printValorSimbolo(str_aux, hashTable);  matriz_exp = false; return CONTINUE_VALUE;}
         | { }
 
-continua_atribute: Expressao_matematica SEMICOLON EOL { sinal = 1; if(!not_existId){hashTable.insert(str_aux2,valorExp);} not_existId = false; /*Delete_Tree(AST);*/; return CONTINUE_VALUE;}
-                | ChamaCreateMatrix EOL {sinal = 1; hashTable.insert(str,matriz_global);/*Delete_Tree(AST);*/ not_existId = false; matriz_exp = false; return CONTINUE_VALUE;}
+continua_atribute: Expressao_matematica SEMICOLON EOL { AtribuirValor(); return CONTINUE_VALUE;}
 
-
-
-
-
-
-Expressao_matematica_Direta: Funcao_Integral {if(!not_existId && !matriz_exp){printValorCalculoExp(valorExp);} matriz_exp =false; not_existId = false; /*Delete_Tree(AST);*/}
-                            
+                | ChamaCreateMatrix EOL {sinal = 1; hashTable.insert(str,matriz_global);
+                /*Delete_Tree(AST);*/ not_existId = false; matriz_exp = false; return CONTINUE_VALUE;}
                             
 
 
-// Tirei uma produção vazia aqui caso de erro
+
+
 Expressao_matematica: {}
-                        |Expressao_matematica Exp_aux{ AST = $2; if(!not_existId) {valorExp = calculate_Exp(AST, hashTable); } not_existId = false; }
+                        |Expressao_matematica Exp_aux{ AST = $2; if(!not_existId && !matriz_exp){valorExp = calculate_Exp(AST, hashTable); }else if(!not_existId && matriz_exp){ matriz_exp_global = solve_Matriz_expressao(AST, hashTable); }  }
 
 Exp_aux: Exp_DivMul {  $$ = $1;}
     | Exp_aux PLUS Exp_DivMul {     TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
@@ -429,9 +427,13 @@ Exp_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeo
                                         aux->node_type = IDENTIFIER_NODE;
                                         if(hashTable.search(str) == NULL){
                                                 aux->value = 0;
-                                        }else{
-
+                                        } else if(hashTable.getType(str)== 0){
                                         aux->value = $1*(*(static_cast<float*>(hashTable.search(str))));
+                                        }else if(hashTable.getType(str)== 1){
+                                                aux->value = 0;
+                                                multiplyMatrixByScalar(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str))), $1);
+                                                matriz_exp = true;
+                                                
                                         }
                                        
                                         aux->name = str;
@@ -503,7 +505,6 @@ Constantes: PI {$$ = M_PI;}
 
 
 
-
 %%
 
 void yyerror(char *s) {
@@ -525,4 +526,43 @@ int main(int argc, char** argv)
     
     printf("SUCCESSFUL COMPILATION.");
     return 0;
+}
+
+void printarExpressao(){
+        if(!not_existId && !matriz_exp)
+        {
+                printValorCalculoExp(valorExp);
+
+        }else if(!not_existId && matriz_exp){
+                matriz_exp_global = solve_Matriz_expressao(AST, hashTable); 
+                if(!break_matriz){
+                printMatriz(matriz_exp_global);
+                }else{
+                        break_matriz = false;
+                }
+        } 
+
+        matriz_exp =false; 
+        not_existId = false; 
+        /*Delete_Tree(AST);*/
+}
+
+void AtribuirValor(){
+         sinal = 1; 
+         if(!not_existId && !matriz_exp){
+
+                hashTable.insert(str_aux2,valorExp);
+
+        }else if(!not_existId && matriz_exp){
+                if(!break_matriz){
+
+                hashTable.insert(str_aux2,matriz_exp_global);
+
+                }else{
+                        break_matriz = false;
+                }
+
+        } 
+        not_existId = false; 
+        matriz_exp = false; 
 }

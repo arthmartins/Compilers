@@ -11,13 +11,17 @@ bool draw_axix;
 bool erase_plot;
 bool connect_dots;
 
-float **matriz_aaa;
-
-std::vector<std::vector<float>> matriz;
+std::vector<std::vector<float>>* matriz;
 
 std::vector<std::vector<float>> matriz_2;
 
+
+
+float matriz_aa[25][80];
+
 std::vector<int> casas_decimais;
+
+bool break_matriz = false;
 
 bool not_existId = false;
 
@@ -113,7 +117,7 @@ void printAbout(){
 
 std::vector<std::vector<float>> createMatriz(std::list<float>& listaMatriz, std::list<int>& ElementsPLinha, int numerodeColunas) {
 
-    for(auto& linha: matriz){
+    for(auto& linha: *matriz){
         linha.clear();
     }
     
@@ -123,10 +127,14 @@ std::vector<std::vector<float>> createMatriz(std::list<float>& listaMatriz, std:
 
     if(linhasMatriz > 10 || colunasMatriz >10){
         printf("\nERROR: Matrix limits out of boundaries.\n\n");
-        return matriz;
+        return *matriz;
     }
 
-    matriz.resize(ElementsPLinha.size(), std::vector<float>(numerodeColunas));
+    //std::vector<std::vector<float>> matriz_aa(linhasMatriz, std::vector<float>(colunasMatriz));
+
+    //matriz.resize(ElementsPLinha.size(), std::vector<float>(numerodeColunas));
+
+    matriz = new std::vector<std::vector<float>>(linhasMatriz, std::vector<float>(colunasMatriz));
 
     auto it = ElementsPLinha.begin();
     auto itList = listaMatriz.begin();
@@ -136,9 +144,9 @@ std::vector<std::vector<float>> createMatriz(std::list<float>& listaMatriz, std:
         for (int j = 0; j < colunasMatriz; ++j) {
             if (quantElementLinha <= j) {
                 
-                matriz[i][j] = 0;
+                (*matriz)[i][j] = 0;
             } else {
-                matriz[i][j] = *itList++;
+                (*matriz)[i][j] = *itList++;
                 
             }
         }
@@ -146,13 +154,14 @@ std::vector<std::vector<float>> createMatriz(std::list<float>& listaMatriz, std:
     listaMatriz.clear();
     ElementsPLinha.clear();
 
-    return matriz;
+
+    return *matriz;
 }
 
 
 void showMatriz()
 {
-    printMatriz(matriz);
+    printMatriz(*matriz);
 }
 
 int contar_casas_decimais(std::string numero) {
@@ -168,7 +177,7 @@ void contaCasasDecimais(std::vector<std::vector<float>> matriz_aux){
 
     for(int j =0; j < col; j++){
         for(int i = 0; i < lin; i++){
-            int num_casas_decimais = contar_casas_decimais(std::to_string(matriz[i][j]));
+            int num_casas_decimais = contar_casas_decimais(std::to_string(matriz_aux[i][j]));
             if(num_casas_decimais > variavel_contadora){
                 variavel_contadora = num_casas_decimais;
             }
@@ -196,7 +205,7 @@ void printMatriz(std::vector<std::vector<float>> matriz_aux)
     for (int i = 0; i < matriz_aux.size(); ++i) {
         printf("| ");
         for (int j = 0; j < matriz_aux[0].size(); ++j) {
-            for(int l = 0; l < casas_decimais[k]-contar_casas_decimais(std::to_string(matriz[i][j])); l++){
+            for(int l = 0; l < casas_decimais[k]-contar_casas_decimais(std::to_string(matriz_aux[i][j])); l++){
                 printf(" ");
             }
             printf("%.*f ",float_precision, matriz_aux[i][j]);
@@ -251,19 +260,19 @@ float determinanteSubmatriz(const std::vector<std::vector<float>>& matriz, int t
 
 
 void determinanteMatriz() {
-    int tamanho = matriz.size();
+    int tamanho = (*matriz).size();
     if (tamanho == 0 || matriz[0].size() != tamanho) {
         
         std::cerr << std::endl << "Matrix format incorrect!" << std::endl << std::endl;
         
     }else
-        printf("\n%.*f\n\n",float_precision, determinanteSubmatriz(matriz, tamanho));
+        printf("\n%.*f\n\n",float_precision, determinanteSubmatriz((*matriz), tamanho));
 
 }
 
 void solveLinearSystem() {
     
-    std::vector<std::vector<float>> matriz_aux(matriz);
+    std::vector<std::vector<float>> matriz_aux((*matriz));
 
     if(colunasMatriz != linhasMatriz + 1){
         std::cerr << std::endl << "Matrix format incorrect!" << std::endl << std::endl;
@@ -425,37 +434,27 @@ void printValorCalculoExp(float valor){
     printf("\n%.*f\n\n",float_precision, valor);
 }
 
-void multiplyMatrixByScalar(std::vector<std::vector<float>> matrix, int scalar) {
-
-    std::vector<std::vector<float>> result;
-
+void multiplyMatrixByScalar(std::vector<std::vector<float>>& matrix, int scalar) {
     // Iterar sobre cada linha da matriz
-    for (const auto& row : matrix) {
-        std::vector<float> new_row;
+    for (auto& row : matrix) {
         // Multiplicar cada elemento da linha pelo escalar
-        for (int element : row) {
-            new_row.push_back(element * scalar);
+        for (float& element : row) {
+            element *= scalar;
         }
-        // Adicionar a nova linha ao resultado
-        result.push_back(new_row);
     }
-
-    
-    printMatriz(result);
-    
-    
 }
 
-void solve_Matriz_expressao(TreeNode* ast, HashTable hash){
+
+std::vector<std::vector<float>> solve_Matriz_expressao(TreeNode* ast, HashTable hash){
     RPN_Walk_Errors(ast, hash);
     if(not_existId){
     printf("\n\n");
-    return;   
+    return matriz_2;   
     }else{
-        printf("j");
-        //matriz_2 = RPN_Walk_matriz(ast,hash);
-        //printMatriz(matriz_2);
+        setContador();
+        matriz_2 = RPN_Walk_matriz(ast,hash);
         
+        return matriz_2;
     }
 
 }
@@ -465,7 +464,8 @@ std::vector<std::vector<float>> addMatrices(std::vector<std::vector<float>> matr
 
     // Verificar se as matrizes têm o mesmo tamanho
     if (matrix1.size() != matrix2.size() || matrix1[0].size() != matrix2[0].size()) {
-        std::cerr << "Erro: As matrizes não têm o mesmo tamanho.\n";
+        std::cerr << "\nIncorrect dimensions for operator '+' - have MATRIX [" << matrix1.size() <<"] ["<< matrix1[0].size() <<"] and MATRIX ["<< matrix2.size() << "] ["<< matrix2[0].size() <<"]\n\n";
+        break_matriz = true;
         return result; // Retornar uma matriz vazia em caso de erro
     }
 
@@ -490,7 +490,8 @@ std::vector<std::vector<float>> subtractMatrices(std::vector<std::vector<float>>
 
     // Verificar se as matrizes têm o mesmo tamanho
     if (matrix1.size() != matrix2.size() || matrix1[0].size() != matrix2[0].size()) {
-        std::cerr << "Erro: As matrizes não têm o mesmo tamanho.\n";
+        std::cerr << "\nIncorrect dimensions for operator '-' - have MATRIX [" << matrix1.size() <<"] ["<< matrix1[0].size() <<"] and MATRIX ["<< matrix2.size() << "] ["<< matrix2[0].size() <<"]\n\n";
+        break_matriz = true;
         return result; // Retornar uma matriz vazia em caso de erro
     }
 
@@ -508,4 +509,103 @@ std::vector<std::vector<float>> subtractMatrices(std::vector<std::vector<float>>
     }
 
     return result;
+}
+
+std::vector<std::vector<float>> multiplyMatrices(const std::vector<std::vector<float>>& matrix1, const std::vector<std::vector<float>>& matrix2) {
+    int m1_rows = matrix1.size();
+    int m1_cols = matrix1[0].size();
+    int m2_rows = matrix2.size();
+    int m2_cols = matrix2[0].size();
+
+    // Verificar se as dimensões das matrizes são válidas para a multiplicação
+    if (m1_cols != m2_rows) {
+        std::cerr << "\nIncorrect dimensions for operator '*' - have MATRIX [" << m1_rows <<" ][ "<<m1_cols <<"] and MATRIX [ "<< m2_rows <<"][ "<< m2_cols <<"]\n\n";
+        break_matriz = true;
+        return {};
+    }
+
+    // Criar uma matriz resultante com tamanho correto
+    std::vector<std::vector<float>> result(m1_rows, std::vector<float>(m2_cols, 0));
+
+    // Multiplicar as matrizes
+    for (int i = 0; i < m1_rows; ++i) {
+        for (int j = 0; j < m2_cols; ++j) {
+            for (int k = 0; k < m1_cols; ++k) {
+                result[i][j] += matrix1[i][k] * matrix2[k][j];
+            }
+        }
+    }
+
+    return result;
+}
+
+std::vector<std::vector<float>> multiplyByNumber(const std::vector<std::vector<float>>& matrix, float scalar) {
+    // Criar uma matriz resultante com o mesmo tamanho da matriz original
+    std::vector<std::vector<float>> result(matrix.size(), std::vector<float>(matrix[0].size()));
+
+    // Multiplicar cada elemento da matriz pelo escalar
+    for (size_t i = 0; i < matrix.size(); ++i) {
+        for (size_t j = 0; j < matrix[i].size(); ++j) {
+            result[i][j] = matrix[i][j] * scalar;
+        }
+    }
+
+    return result;
+}
+
+
+void plotGraph(TreeNode *plot, double minX, double maxX, double minY, double maxY, int resolutionX, int resolutionY, HashTable hash) {
+    double stepX = (maxX - minX) / (resolutionX);
+    double stepY = (maxY - minY) / (resolutionY);
+    double aux_lo = minX;
+
+    // Desenhar a linha horizontal do eixo x
+    for (int j = 0; j < resolutionX; ++j) {
+        double x = minX + j * stepX;
+        if (std::abs(x) < stepX / 2.0) {
+            std::cout << "-";
+        } else {
+            std::cout << " ";
+        }
+    }
+    std::cout << std::endl;
+
+    for (int i = 0; i < resolutionY; ++i) {
+        double y = minY + i * stepY;
+        // Desenhar a linha vertical do eixo y
+        std::cout << "|";
+        for (int j = 1; j < resolutionX - 1; ++j) {
+            double x = minX + j * stepX;
+            if (std::abs(RPN_Walk_calculatinge(plot,x,hash) - y) < stepY / 2.0) {
+                std::cout << "*";
+            } else {
+                std::cout << " ";
+            }
+        }
+        std::cout << "|" << std::endl;
+    }
+
+    // Desenhar a linha horizontal do eixo x
+    for (int j = 0; j < resolutionX; ++j) {
+        double x = minX + j * stepX;
+        if (std::abs(x) < stepX / 2.0) {
+            std::cout << "-";
+        } else {
+            std::cout << " ";
+        }
+    }
+    std::cout << std::endl;
+}
+
+void plotarGrafico(TreeNode *plot, HashTable hash){
+    if(plot == NULL){
+        printf("\nNo function defined! \n\n");
+        return;
+    }
+    if(not_existId){
+        printf("\n\n");
+    }else{
+        
+        plotGraph(plot, h_view_lo, h_view_hi, v_view_lo, v_view_hi, 80, 25, hash);
+    }
 }

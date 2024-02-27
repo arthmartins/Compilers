@@ -15,10 +15,10 @@ struct Node {
     std::vector<std::vector<float>> matriz_hash;  
 
     
-    Node(int t, string n, float num) : type(t), name(n), valorFloat(num) {}
+    Node(int t, string n, float num) : type(t), name(n), valorFloat(num), matriz_hash(NULL) {}
 
     
-    Node(int t, string n, vector<vector<float>> value) : type(t), name(n), matriz_hash(value) {}
+    Node(int t, string n, vector<vector<float>> value, float v) : type(t), name(n), matriz_hash(value), valorFloat(v) {}
 };
 
 class HashTable {

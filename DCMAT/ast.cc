@@ -9,6 +9,7 @@
 extern bool not_existId;
 extern std::string idName;
 int contador = 0;
+extern bool break_matriz;
 
 std::vector<std::vector<float>> matriz_ast;
 
@@ -27,6 +28,7 @@ float RPN_Walk_calculatinge(TreeNode* aux, float x, HashTable hash){
                 if(hash.getType(aux->name) == -1){
                     idName = aux->name;
                     not_existId = true;
+                    
                 }
                 contador++;
                 break;
@@ -228,6 +230,29 @@ void RPN_Walk_Errors(TreeNode* aux, HashTable hash){
 
 }
 
+void RPN_Walk_Errors_2(TreeNode* aux, HashTable hash){
+
+    if(aux != NULL){
+        RPN_Walk_Errors(aux->left,hash);
+        RPN_Walk_Errors(aux->right,hash);
+        switch(aux->node_type){
+            case IDENTIFIER_NODE:
+                
+                if(hash.getType(aux->name) == -1){
+                    printf("\nUndefined symbol [");
+                    std::cout << aux->name << "]";
+                    not_existId = true;
+                }
+                break;
+        
+            default:
+                
+                break;
+        }
+    }
+
+}
+
 std::vector<std::vector<float>> RPN_Walk_matriz(TreeNode* aux, HashTable hash){
     TreeNode* root = aux;
     if(aux != NULL){
@@ -235,24 +260,42 @@ std::vector<std::vector<float>> RPN_Walk_matriz(TreeNode* aux, HashTable hash){
         RPN_Walk_matriz(aux->right,hash);
         switch(aux->node_type){
             case IDENTIFIER_NODE:
-                
+                if(contador == 0){
+                    if(hash.getType(aux->name) == 1){
+                        matriz_ast = *(static_cast<std::vector<std::vector<float>>*>(hash.search(aux->name)));
+                    }
+                }
                 break;
             case NUMBER:
-                
+                contador++;
                 break;
             case ADD:
+                if(!break_matriz){
                 if(hash.getType(aux->left->name) == 1 && hash.getType(aux->right->name) == 1){
                     matriz_ast = addMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(aux->right->name))));
                 }
+                }
+                contador++;
                 break;
             case SUB:
+                if(!break_matriz){
                 if(hash.getType(aux->left->name) == 1 && hash.getType(aux->right->name) == 1){
                     matriz_ast = subtractMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(aux->right->name))));
                 }
-                
+                }
+                contador++;
                 break;
             case MUL:
-                aux->value = aux->left->value * aux->right->value;
+                if(!break_matriz){
+                    if(hash.getType(aux->left->name) == 1 && hash.getType(aux->right->name) == 1){
+                        matriz_ast = multiplyMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(aux->right->name)))); 
+                    }else if(hash.getType(aux->left->name) == 1) {    
+                        matriz_ast = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hash.search(aux->left->name))), aux->right->value);
+                    }else if(hash.getType(aux->right->name) == 1){
+                        matriz_ast = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hash.search(aux->right->name))), aux->left->value);
+                    }
+                }
+            contador++;
                 
         }
     }
@@ -271,4 +314,3 @@ void Delete_Tree(TreeNode* aux)
         free(aux);
     }
 }
-

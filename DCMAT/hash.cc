@@ -28,7 +28,7 @@ void HashTable::insert(string name, vector<vector<float>> value) {
     int tipo = getType(name);
     if(tipo == -1){
     int index = calculateKey(name);
-    table[index].push_back(Node(1, name, value)); // type == 1 para matriz
+    table[index].push_back(Node(1, name, value, 0)); // type == 1 para matriz
     }else{
         update(name,value);
     }

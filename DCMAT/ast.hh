@@ -48,4 +48,6 @@ void setContador();
 
 std::vector<std::vector<float>> RPN_Walk_matriz(TreeNode* aux, HashTable hash);
 
+void RPN_Walk_Errors_2(TreeNode* aux, HashTable hash);
+
 #endif
