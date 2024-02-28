@@ -1,7 +1,7 @@
-#include "ast.hh"
+#include "ast.hpp"
 
-#ifndef COMANDOS_HH
-#define COMANDOS_HH
+#ifndef COMANDOS_HPP
+#define COMANDOS_HPP
 
 #define H_VIEW_LO_DEFAULT -6.5
 #define H_VIEW_HI_DEFAULT 6.5
@@ -17,7 +17,7 @@
 #include <vector>
 #include <list>
 #include <iostream>
-#include "hash.hh"
+#include "hash.hpp"
 #include <cmath>
 #include <iomanip>
 #include <cstdio>
@@ -45,7 +45,7 @@ void setFloatPrecision(int valor);
 
 void setIntegralSteps(int valor);
 
-std::vector<std::vector<float>> createMatriz(std::list<float>& listaMatriz, std::list<int>& ElementsPLinha, int numerodeColunas);
+std::vector<std::vector<float>>* createMatriz(std::list<float>& listaMatriz, std::list<int>& ElementsPLinha, int numerodeColunas);
 
 void showMatriz();
 
@@ -69,15 +69,15 @@ void printValorCalculoExp(float valor);
 
 void multiplyMatrixByScalar(std::vector<std::vector<float>>& matrix, int scalar);
 
-std::vector<std::vector<float>> addMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2);
+std::vector<std::vector<float>>* addMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2);
 
-std::vector<std::vector<float>> solve_Matriz_expressao(TreeNode* ast, HashTable hash);
+std::vector<std::vector<float>>* solve_Matriz_expressao(TreeNode* ast, HashTable hash);
 
-std::vector<std::vector<float>> subtractMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2);
+std::vector<std::vector<float>>* subtractMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2);
 
-std::vector<std::vector<float>> multiplyMatrices(const std::vector<std::vector<float>>& matrix1, const std::vector<std::vector<float>>& matrix2);
+std::vector<std::vector<float>>* multiplyMatrices(const std::vector<std::vector<float>>& matrix1, const std::vector<std::vector<float>>& matrix2);
 
-std::vector<std::vector<float>> multiplyByNumber(const std::vector<std::vector<float>>& matrix, float scalar);
+std::vector<std::vector<float>>* multiplyByNumber(const std::vector<std::vector<float>>& matrix, float scalar);
 
 void plotarGrafico(TreeNode *plot, HashTable hash);
 

@@ -1,4 +1,4 @@
-#include "comandos.hh"
+#include "comandos.hpp"
 
 
 float h_view_lo;
@@ -13,7 +13,9 @@ bool connect_dots;
 
 std::vector<std::vector<float>>* matriz;
 
-std::vector<std::vector<float>> matriz_2;
+std::vector<std::vector<float>>* matriz_2;
+
+
 
 
 
@@ -115,25 +117,21 @@ void printAbout(){
 
 
 
-std::vector<std::vector<float>> createMatriz(std::list<float>& listaMatriz, std::list<int>& ElementsPLinha, int numerodeColunas) {
+std::vector<std::vector<float>>* createMatriz(std::list<float>& listaMatriz, std::list<int>& ElementsPLinha, int numerodeColunas) {
 
-    for(auto& linha: *matriz){
-        linha.clear();
-    }
-    
-
+  
     linhasMatriz = ElementsPLinha.size();
     colunasMatriz = numerodeColunas;
 
+
     if(linhasMatriz > 10 || colunasMatriz >10){
         printf("\nERROR: Matrix limits out of boundaries.\n\n");
-        return *matriz;
+        return matriz;
     }
-
+    
     //std::vector<std::vector<float>> matriz_aa(linhasMatriz, std::vector<float>(colunasMatriz));
 
     //matriz.resize(ElementsPLinha.size(), std::vector<float>(numerodeColunas));
-
     matriz = new std::vector<std::vector<float>>(linhasMatriz, std::vector<float>(colunasMatriz));
 
     auto it = ElementsPLinha.begin();
@@ -154,8 +152,8 @@ std::vector<std::vector<float>> createMatriz(std::list<float>& listaMatriz, std:
     listaMatriz.clear();
     ElementsPLinha.clear();
 
-
-    return *matriz;
+    
+    return matriz;
 }
 
 
@@ -366,6 +364,7 @@ void printValorSimbolo(std::string name, HashTable hash){
         printf("%.*f \n\n",float_precision, *(static_cast<float*>(hash.search(name))));
         
     }else if (valor == 1){
+        
         printMatriz(*(static_cast<std::vector<std::vector<float>>*>(hash.search(name))));
     }
 
@@ -445,7 +444,7 @@ void multiplyMatrixByScalar(std::vector<std::vector<float>>& matrix, int scalar)
 }
 
 
-std::vector<std::vector<float>> solve_Matriz_expressao(TreeNode* ast, HashTable hash){
+std::vector<std::vector<float>>* solve_Matriz_expressao(TreeNode* ast, HashTable hash){
     RPN_Walk_Errors(ast, hash);
     if(not_existId){
     printf("\n\n");
@@ -459,8 +458,8 @@ std::vector<std::vector<float>> solve_Matriz_expressao(TreeNode* ast, HashTable 
 
 }
 
-std::vector<std::vector<float>> addMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2) {
-    std::vector<std::vector<float>> result;
+std::vector<std::vector<float>>* addMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2) {
+    std::vector<std::vector<float>>* result = new std::vector<std::vector<float>>;;
 
     // Verificar se as matrizes têm o mesmo tamanho
     if (matrix1.size() != matrix2.size() || matrix1[0].size() != matrix2[0].size()) {
@@ -479,20 +478,20 @@ std::vector<std::vector<float>> addMatrices(std::vector<std::vector<float>> matr
             new_row.push_back(sum);
         }
         // Adicionar a nova linha ao resultado
-        result.push_back(new_row);
+        result->push_back(new_row);
     }
 
     return result;
 }
 
-std::vector<std::vector<float>> subtractMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2) {
-    std::vector<std::vector<float>> result;
+std::vector<std::vector<float>>* subtractMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2) {
+    std::vector<std::vector<float>>* result = new std::vector<std::vector<float>>;
 
     // Verificar se as matrizes têm o mesmo tamanho
     if (matrix1.size() != matrix2.size() || matrix1[0].size() != matrix2[0].size()) {
         std::cerr << "\nIncorrect dimensions for operator '-' - have MATRIX [" << matrix1.size() <<"] ["<< matrix1[0].size() <<"] and MATRIX ["<< matrix2.size() << "] ["<< matrix2[0].size() <<"]\n\n";
         break_matriz = true;
-        return result; // Retornar uma matriz vazia em caso de erro
+        return nullptr; // Retornar uma matriz vazia em caso de erro
     }
 
     // Iterar sobre cada linha das matrizes
@@ -505,13 +504,13 @@ std::vector<std::vector<float>> subtractMatrices(std::vector<std::vector<float>>
             new_row.push_back(diff);
         }
         // Adicionar a nova linha ao resultado
-        result.push_back(new_row);
+        result->push_back(new_row);
     }
 
     return result;
 }
 
-std::vector<std::vector<float>> multiplyMatrices(const std::vector<std::vector<float>>& matrix1, const std::vector<std::vector<float>>& matrix2) {
+std::vector<std::vector<float>>* multiplyMatrices(const std::vector<std::vector<float>>& matrix1, const std::vector<std::vector<float>>& matrix2) {
     int m1_rows = matrix1.size();
     int m1_cols = matrix1[0].size();
     int m2_rows = matrix2.size();
@@ -519,19 +518,20 @@ std::vector<std::vector<float>> multiplyMatrices(const std::vector<std::vector<f
 
     // Verificar se as dimensões das matrizes são válidas para a multiplicação
     if (m1_cols != m2_rows) {
-        std::cerr << "\nIncorrect dimensions for operator '*' - have MATRIX [" << m1_rows <<" ][ "<<m1_cols <<"] and MATRIX [ "<< m2_rows <<"][ "<< m2_cols <<"]\n\n";
+        std::cerr << "\nIncorrect dimensions for operator '*' - have MATRIX [" << m1_rows <<"]["<<m1_cols <<"] and MATRIX ["<< m2_rows <<"]["<< m2_cols <<"]\n\n";
+        // Aqui você deve decidir o que fazer em caso de erro. Por exemplo, lançar uma exceção.
         break_matriz = true;
-        return {};
+        return nullptr;
     }
 
     // Criar uma matriz resultante com tamanho correto
-    std::vector<std::vector<float>> result(m1_rows, std::vector<float>(m2_cols, 0));
+    std::vector<std::vector<float>>* result = new std::vector<std::vector<float>>(m1_rows, std::vector<float>(m2_cols, 0));
 
     // Multiplicar as matrizes
     for (int i = 0; i < m1_rows; ++i) {
         for (int j = 0; j < m2_cols; ++j) {
             for (int k = 0; k < m1_cols; ++k) {
-                result[i][j] += matrix1[i][k] * matrix2[k][j];
+                (*result)[i][j] += matrix1[i][k] * matrix2[k][j];
             }
         }
     }
@@ -539,14 +539,14 @@ std::vector<std::vector<float>> multiplyMatrices(const std::vector<std::vector<f
     return result;
 }
 
-std::vector<std::vector<float>> multiplyByNumber(const std::vector<std::vector<float>>& matrix, float scalar) {
+std::vector<std::vector<float>>* multiplyByNumber(const std::vector<std::vector<float>>& matrix, float scalar) {
     // Criar uma matriz resultante com o mesmo tamanho da matriz original
-    std::vector<std::vector<float>> result(matrix.size(), std::vector<float>(matrix[0].size()));
+    std::vector<std::vector<float>>* result = new std::vector<std::vector<float>>(matrix.size(), std::vector<float>(matrix[0].size()));
 
     // Multiplicar cada elemento da matriz pelo escalar
     for (size_t i = 0; i < matrix.size(); ++i) {
         for (size_t j = 0; j < matrix[i].size(); ++j) {
-            result[i][j] = matrix[i][j] * scalar;
+            (*result)[i][j] = matrix[i][j] * scalar;
         }
     }
 

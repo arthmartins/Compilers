@@ -1,4 +1,4 @@
-#include "hash.hh"
+#include "hash.hpp"
 
 //Node::Node(int t, string n, float num) : type(t), name(n), valorFloat(num) {//
 
@@ -23,7 +23,7 @@ void HashTable::insert(string name, float value) {
     }
 }
 
-void HashTable::insert(string name, vector<vector<float>> value) {
+void HashTable::insert(string name, std::vector<std::vector<float>>*  value) {
     
     int tipo = getType(name);
     if(tipo == -1){
@@ -41,7 +41,7 @@ void* HashTable::search(string name) {
             if (node.type == 0) {
                 return &(node.valorFloat);
             } else if (node.type == 1) {
-                return &(node.matriz_hash);
+                return (node.matriz_hash);
             }
         }
     }
@@ -63,7 +63,7 @@ void HashTable::printAll() {
             if (node.type == 0) {
                 cout << "FLOAT" <<  endl;
             }else if(node.type == 1){
-                cout << "MATRIX [" << node.matriz_hash.size() << "] [" << node.matriz_hash[0].size() << "]" << endl;
+                cout << "MATRIX [" << (*node.matriz_hash).size() << "] [" << node.matriz_hash[0].size() << "]" << endl;
             }
         }
     }
@@ -72,9 +72,9 @@ void HashTable::printAll() {
 
 int HashTable::getType(string name){
     
-    int index = calculateKey(name);
+    int index = calculateKey(name.c_str());
     for (auto& node : table[index]) {
-        if (node.name == name) {
+        if (node.name == name.c_str()) {
             return node.type;
         }
     }
@@ -93,7 +93,7 @@ void HashTable::update(string name, float value) {
     
 }
 
-void HashTable::update(string name, vector<vector<float>> value) {
+void HashTable::update(string name, std::vector<std::vector<float>>*  value) {
     int index = calculateKey(name);
     for (auto& node : table[index]) {
         if (node.name == name) {

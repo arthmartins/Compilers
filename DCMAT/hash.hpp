@@ -1,5 +1,5 @@
-#ifndef HASH_HH
-#define HASH_HH
+#ifndef HASH_HPP
+#define HASH_HPP
 
 #include <iostream>
 #include <string>
@@ -12,13 +12,13 @@ struct Node {
     int type;
     string name;
     float valorFloat;
-    std::vector<std::vector<float>> matriz_hash;  
+    std::vector<std::vector<float>>* matriz_hash;  
 
     
     Node(int t, string n, float num) : type(t), name(n), valorFloat(num), matriz_hash(NULL) {}
 
     
-    Node(int t, string n, vector<vector<float>> value, float v) : type(t), name(n), matriz_hash(value), valorFloat(v) {}
+    Node(int t, string n, std::vector<std::vector<float>>*  value, float v) : type(t), name(n), matriz_hash(value), valorFloat(v) {}
 };
 
 class HashTable {
@@ -30,13 +30,13 @@ private:
     
 public:
     void insert(string name, float value);
-    void insert(string name, vector<vector<float>> value);
+    void insert(string name, std::vector<std::vector<float>>* value);
     void* search(string name);
     void remove(string name);
     void printAll();
     int getType(string name);
     void update(string name, float value);
-    void update(string name, vector<vector<float>> value);
+    void update(string name, std::vector<std::vector<float>>*  value);
 };
 
 #endif

@@ -1,9 +1,9 @@
-#ifndef AST_HH
-#define AST_HH
+#ifndef AST_HPP
+#define AST_HPP
 
 #include <iostream>
 #include <string>
-#include "hash.hh"
+#include "hash.hpp"
 
 
 #define IDENTIFIER_NODE 1
@@ -24,7 +24,7 @@ struct node
 {
 int node_type;
 float value;
-std::string name;
+std::string* name;
 //vector<vector<float>> matriz_a;
 
 TreeNode* left;
@@ -46,7 +46,7 @@ void RPN_Walk_Errors(TreeNode* aux, HashTable hash);
 
 void setContador();
 
-std::vector<std::vector<float>> RPN_Walk_matriz(TreeNode* aux, HashTable hash);
+std::vector<std::vector<float>>* RPN_Walk_matriz(TreeNode* aux, HashTable hash);
 
 void RPN_Walk_Errors_2(TreeNode* aux, HashTable hash);
 

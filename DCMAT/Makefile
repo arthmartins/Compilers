@@ -1,25 +1,15 @@
-FLEX=flex
-BISON=bison
+LEX=flex
+YY=bison
 CC=g++
-CFLAGS=
-LIBS=
+BIN = dcmat
+L_SOURCE = lexico.l
+Y_SOURCE = sintatico.y
+CFLAGS = -std=c++23 -g -I. -w
 
-PROGRAMA = dcmat
-LEXICO = lexico.l
-SINTATICO = sintatico.y
+$(BIN): $(L_SOURCE) $(Y_SOURCE)
+	$(LEX) $(L_SOURCE)
+	$(YY) -d $(Y_SOURCE)
+	$(CC) *.c *cpp $(CFLAGS) -o $(BIN)
 
-CC_FLAGS = -std=c++11				\
-		   -I.						\
-		   -w
-			 
-		   
-
-$(PROGRAMA): $(LEXICO) $(SINTATICO)
-	$(FLEX) -o lex.yy.cc $(LEXICO)
-	$(BISON) -o sintatico.yy.cc -d $(SINTATICO)
-	$(CC) *.cc $(CC_FLAGS) -o $(PROGRAMA)
-
-
-clean:
-	rm -f lex.yy.cc sintatico.yy.cc sintatico.tab.cc sintatico.yy.hh sintatico.tab.h $(PROGRAMA)
-	rm -f lexico.exe lexico
+run: 
+	./$(BIN)

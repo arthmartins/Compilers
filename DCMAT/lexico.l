@@ -1,13 +1,12 @@
 %option noyywrap
 
 %{
-#include "ast.hh"
+#include "ast.hpp"
 #include <stdio.h>
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
-#include <sintatico.yy.hh>
-
+#include <sintatico.tab.h>
 
 extern YYSTYPE yylval;
 extern std::string str;
@@ -90,7 +89,7 @@ extern std::string str;
 
 \n { return EOL; }
 
-[_a-zA-Z][_a-zA-Z0-9]* {yylval.string_id = strdup(yytext); str = strdup(yytext); return IDENTIFIER; }
+[a-zA-Z]+[_0-9a-zA-Z]* { yylval.string_id = strdup(yytext);  str = strdup(yytext);  return IDENTIFIER; }
 
 . { printf("\nInvalid Symbol: %s\n\n", yytext); return 1;} 
 
