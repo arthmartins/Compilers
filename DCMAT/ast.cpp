@@ -10,6 +10,7 @@ extern bool not_existId;
 extern std::string idName;
 int contador = 0;
 extern bool break_matriz;
+extern int sinal_x;
 
 std::vector<std::vector<float>>* matriz_ast;
 
@@ -17,18 +18,16 @@ void setContador(){
     contador = 0;
 }
 
-float RPN_Walk_calculatinge(TreeNode* aux, float x, HashTable hash){
+double RPN_Walk_calculatinge(TreeNode* aux, float x, HashTable hash){
     TreeNode* root = aux;
-    float valor = 0;
+    double valor = 0;
     if(aux != NULL){
         RPN_Walk_calculatinge(aux->left,x,hash);
         RPN_Walk_calculatinge(aux->right,x,hash);
         switch(aux->node_type){
             case IDENTIFIER_NODE:
-                if(hash.getType((*aux->name).c_str()) == -1){
-                    idName = *aux->name;
-                    not_existId = true;
-                    
+                if(contador == 0){
+                valor += aux->value;
                 }
                 contador++;
                 break;
@@ -57,6 +56,18 @@ float RPN_Walk_calculatinge(TreeNode* aux, float x, HashTable hash){
                 valor += aux->value;
                 contador++;
                 break;
+            case POW_NODE:
+                aux->value = pow(aux->left->value, aux->right->value);
+                valor += aux->value;
+                contador++;
+                break;
+
+            case REM:
+                aux->value = fmod(aux->left->value, aux->right->value);
+                valor += aux->value;
+                contador++;
+                break;
+
             case ABS_NODE:
                 aux->value = abs((int)aux->left->value);
                 valor += aux->value;
@@ -79,7 +90,11 @@ float RPN_Walk_calculatinge(TreeNode* aux, float x, HashTable hash){
                 contador++;
                 break;
             case X_NODE:
-                aux->value = x;
+                aux->value = aux->sinal*x;
+        
+                if(contador == 0){
+                valor += aux->value;
+                }
                 contador++;
                 break;
         }
@@ -104,8 +119,7 @@ void RPN_Walk(TreeNode* aux, int float_precision )
         switch(aux->node_type)
         {
             case IDENTIFIER_NODE:
-                printf("\n\n\n\n\n");
-                std::cout << aux->name << " ";
+                std::cout << *aux->name << " ";
                 break;
             case NUMBER:
                 printf("%.*f ", float_precision,aux->value);
@@ -122,6 +136,13 @@ void RPN_Walk(TreeNode* aux, int float_precision )
             case DI:
                 printf("/ ");
                 break;
+            case POW_NODE:
+                printf("^ ");
+                break;
+            case REM:
+                printf("%% ");
+                break;
+
             case ABS_NODE:
                 printf("ABS ");
                 break;
@@ -153,46 +174,67 @@ float RPN_Walk_somatorio(TreeNode* aux, std::string name, int i, HashTable hash)
             case IDENTIFIER_NODE:
                 if(*aux->name == name){
                     aux->value = i;
-                }else if (hash.getType(*aux->name) == -1){
-                    idName = *aux->name;
-                    not_existId = true;
+                }
+                if(contador == 0){
+                valor += aux->value;
                 }
                 break;
             case NUMBER:
-                
+                if(contador == 0){
+                valor += aux->value;
+                }
                 break;
             case ADD:
                 aux->value = aux->left->value + aux->right->value;
                 valor += aux->value;
+                contador++;
                 break;
             case SUB:
                 aux->value = aux->left->value - aux->right->value;
                 valor += aux->value;
+                contador++;
                 break;
             case MUL:
                 aux->value = aux->left->value * aux->right->value;
                 valor += aux->value;
+                contador++;
                 break;
             case DI:
                 aux->value = aux->left->value / aux->right->value;
                 valor += aux->value;
+                contador++;
                 break;
+            case POW_NODE:
+                aux->value = pow(aux->left->value, aux->right->value);
+                valor += aux->value;
+                contador++;
+                break;
+            case REM:
+                aux->value = fmod(aux->left->value, aux->right->value);
+                valor += aux->value;
+                contador++;
+            break;
+
             case ABS_NODE:
                 aux->value = abs((int)aux->left->value);
                 valor += aux->value;
+                contador++;
                 break;
             case SEN_NODE:
     
                 aux->value = sin(aux->left->value);
                 valor += aux->value;
+                contador++;
                 break;
             case COS_NODE:
                 aux->value = cos(aux->left->value);
                 valor += aux->value;
+                contador++;
                 break;
             case TAN_NODE:  
                 aux->value = tan(aux->left->value);
                 valor += aux->value;
+                contador++;
                 break;
             case X_NODE:
                 break;
@@ -213,7 +255,7 @@ void RPN_Walk_Errors(TreeNode* aux, HashTable hash){
                 
                 if(hash.getType((*aux->name).c_str()) == -1){
                     printf("\nUndefined symbol [");
-                    std::cout << aux->name << "]";
+                    std::cout << *aux->name << "]";
                     not_existId = true;
                 }
                 break;
@@ -233,15 +275,41 @@ void RPN_Walk_Errors(TreeNode* aux, HashTable hash){
 void RPN_Walk_Errors_2(TreeNode* aux, HashTable hash){
 
     if(aux != NULL){
-        RPN_Walk_Errors(aux->left,hash);
-        RPN_Walk_Errors(aux->right,hash);
+        RPN_Walk_Errors_2(aux->left,hash);
+        RPN_Walk_Errors_2(aux->right,hash);
         switch(aux->node_type){
             case IDENTIFIER_NODE:
                 
                 if(hash.getType(*aux->name) == -1){
                     printf("\nUndefined symbol [");
-                    std::cout << aux->name << "]";
+                    std::cout << *aux->name << "]";
                     not_existId = true;
+                }
+                break;
+        
+            default:
+                
+                break;
+        }
+    }
+
+}
+
+void RPN_Walk_Errors_sum(TreeNode* aux,std::string name, HashTable hash){
+
+    if(aux != NULL){
+        RPN_Walk_Errors_sum(aux->left,name,hash);
+        RPN_Walk_Errors_sum(aux->right,name,hash);
+        switch(aux->node_type){
+            case IDENTIFIER_NODE:
+                if(*aux->name != name){
+                    
+                
+                if(hash.getType(*aux->name) == -1){
+                    printf("\nUndefined symbol [");
+                    std::cout << *aux->name << "]";
+                    not_existId = true;
+                }
                 }
                 break;
         
@@ -262,7 +330,7 @@ std::vector<std::vector<float>>* RPN_Walk_matriz(TreeNode* aux, HashTable hash){
             case IDENTIFIER_NODE:
                 if(contador == 0){
                     if(hash.getType(*aux->name) == 1){
-                        matriz_ast = (static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->name)));
+                        matriz_ast = (aux->matriz_a);
                     }
                 }
                 break;
@@ -271,31 +339,113 @@ std::vector<std::vector<float>>* RPN_Walk_matriz(TreeNode* aux, HashTable hash){
                 break;
             case ADD:
                 if(!break_matriz){
+                if(aux->left->node_type == NUMBER && aux->right->node_type == IDENTIFIER_NODE){
+                    printf("\nIncorrect type for operator '+' - have FLOAT and MATRIX\n\n");
+                    break_matriz = true;
+                    matriz_ast = NULL;
+                }else if (aux->left->node_type == IDENTIFIER_NODE && aux->right->node_type == NUMBER){
+                    printf("\nIncorrect type for operator '+' - have MATRIX and FLOAT\n\n");
+                    break_matriz = true;
+                    matriz_ast = NULL;
+                }else
                 if(hash.getType(*aux->left->name) == 1 && hash.getType(*aux->right->name) == 1){
-                    matriz_ast = addMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name))));
-                }
+                    //matriz_ast = addMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name))));
+                    matriz_ast = addMatrices(*aux->left->matriz_a, *aux->right->matriz_a);
+                }else if(hash.getType(*aux->left->name) == 1) {    
+                        printf("\nIncorrect type for operator '+' - have MATRIX and FLOAT\n\n");
+                        break_matriz = true;
+                    }else if(hash.getType(*aux->right->name) == 1){
+                        printf("\nIncorrect type for operator '+' - have FLOAT and MATRIX\n\n");
+                        break_matriz = true;
+                    }
                 }
                 contador++;
                 break;
             case SUB:
                 if(!break_matriz){
+                
+                if(aux->left->node_type == NUMBER && aux->right->node_type == IDENTIFIER_NODE){
+                    printf("\nIncorrect type for operator '-' - have FLOAT and MATRIX\n\n");
+                    break_matriz = true;
+                    matriz_ast = NULL;
+                }else if (aux->left->node_type == IDENTIFIER_NODE && aux->right->node_type == NUMBER){
+                    printf("\nIncorrect type for operator '-' - have MATRIX and FLOAT\n\n");
+                    break_matriz = true;
+                    matriz_ast = NULL;
+                }else
                 if(hash.getType(*aux->left->name) == 1 && hash.getType(*aux->right->name) == 1){
-                    matriz_ast = subtractMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name))));
+                    //matriz_ast = subtractMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name))));
+                    matriz_ast = subtractMatrices(*aux->left->matriz_a, *aux->right->matriz_a);
                 }
+                
+                else if(hash.getType(*aux->left->name) == 1) {    
+                        printf("\nIncorrect type for operator '-' - have MATRIX and FLOAT\n\n");
+                        break_matriz = true;
+                        matriz_ast = NULL;
+                    }else if(hash.getType(*aux->right->name) == 1){
+                        printf("\nIncorrect type for operator '-' - have FLOAT and MATRIX\n\n");  
+                        break_matriz = true;
+                        matriz_ast = NULL;
+                    }
                 }
                 contador++;
                 break;
             case MUL:
                 if(!break_matriz){
-                    if(hash.getType(*aux->left->name) == 1 && hash.getType(*aux->right->name) == 1){
-                        matriz_ast = multiplyMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name)))); 
+                    if(aux->left->node_type == NUMBER && aux->right->node_type == IDENTIFIER_NODE){
+                        matriz_ast = multiplyByNumber(*aux->right->matriz_a, aux->left->value);
+                    }else if (aux->left->node_type == IDENTIFIER_NODE && aux->right->node_type == NUMBER){
+                        matriz_ast = multiplyByNumber(*aux->left->matriz_a, aux->right->value);
+                    }
+                    else if(hash.getType(*aux->left->name) == 1 && hash.getType(*aux->right->name) == 1){
+                        //matriz_ast = multiplyMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name)))); 
+                        matriz_ast = multiplyMatrices(*aux->left->matriz_a, *aux->right->matriz_a);
                     }else if(hash.getType(*aux->left->name) == 1) {    
-                        matriz_ast = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), aux->right->value);
+                       // matriz_ast = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), aux->right->value);
+                        matriz_ast = multiplyByNumber(*aux->left->matriz_a,aux->right->value);
                     }else if(hash.getType(*aux->right->name) == 1){
-                        matriz_ast = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name))), aux->left->value);
+                        //matriz_ast = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name))), aux->left->value);
+                        matriz_ast = multiplyByNumber(*aux->right->matriz_a, aux->left->value);
                     }
                 }
-            contador++;
+             contador++;
+                break; 
+            case SEN_NODE:
+                printf("Incorrect type for operator 'SEN' - have MATRIX\n\n");
+                break_matriz = true;
+                contador++;
+                break;
+            case COS_NODE:
+                printf("Incorrect type for operator 'COS' - have MATRIX\n\n");
+                break_matriz = true;
+                contador++;
+                break;
+            case TAN_NODE:
+                printf("Incorrect type for operator 'TAN' - have MATRIX\n\n");
+                break_matriz = true;
+                contador++;
+                break;
+
+            case POW_NODE:
+                printf("Incorrect type for operator 'POW' - have MATRIX\n\n");
+                break_matriz = true;
+                contador++;
+                break;
+            case REM:
+                printf("Incorrect type for operator 'REM' - have MATRIX\n\n");
+                break_matriz = true;
+                contador++;
+                break;
+            case ABS_NODE:
+                printf("Incorrect type for operator 'ABS' - have MATRIX\n\n");
+                break_matriz = true;
+                contador++;
+                break;
+            case X_NODE:
+                printf("Incorrect type for operator 'x' - have MATRIX\n\n");
+                break_matriz = true;
+                contador++;
+                break;
                 
         }
     }
@@ -314,7 +464,9 @@ void Delete_Tree(TreeNode* ast)
         case ADD: 
         case SUB: 
         case MUL: 
-        case DI: 
+        case DI:
+        case POW_NODE:
+        case REM:
             Delete_Tree(ast->right);
         /* one subtree */
         case ABS_NODE:

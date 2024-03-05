@@ -15,13 +15,15 @@ std::vector<std::vector<float>>* matriz;
 
 std::vector<std::vector<float>>* matriz_2;
 
+char matriz_plot[25][80];
 
 
 
-
-float matriz_aa[25][80];
+vector<vector<int>> matriz_aa(25, vector<int>(80, 0));
 
 std::vector<int> casas_decimais;
+
+bool trocouVorH_view = false;
 
 bool break_matriz = false;
 
@@ -62,18 +64,25 @@ void showSettings(){
 
 }
 
+
 void setH_view(float h_lo, float h_hi){
     if(h_lo < h_hi){
         h_view_lo = h_lo;
         h_view_hi = h_hi;
+        trocouVorH_view = true;
     } else
         printf("\nERROR: h_view_lo must be smaller than h_view_hi\n\n");
 }
 
+
+
 void setV_view(float v_lo, float v_hi){
     if(v_lo < v_hi){
-    v_view_lo = v_lo;
-    v_view_hi = v_hi;
+        v_view_lo = v_lo;
+       
+        v_view_hi = v_hi;
+        
+        trocouVorH_view = true;
     } else
         printf("\nERROR: v_view_lo must be smaller than v_view_hi\n\n");
 }
@@ -159,6 +168,10 @@ std::vector<std::vector<float>>* createMatriz(std::list<float>& listaMatriz, std
 
 void showMatriz()
 {
+    if(matriz==NULL){
+        printf("\nNo matrix defined!\n\n");
+        return;
+    }
     printMatriz(*matriz);
 }
 
@@ -376,19 +389,15 @@ void integrate(float a, float b, TreeNode* ast, HashTable hash) {
     float sum = 0.0;
 
     float dx = (b - a) / integral_steps;
+    RPN_Walk_Errors_2(ast, hash);
+    if(not_existId){
+        printf("\n\n");
+        return;
+    }
     for (int i = 0; i < integral_steps; i++) {
         float xi = a + i * dx;
-        if(!not_existId){
         sum += RPN_Walk_calculatinge(ast, xi,hash) * dx;
-        }else{
-            printf("\nUndefined symbol [");
-            std::cout << idName << "]";
-            printf("\n\n");
-            not_existId = false;
-            return;
-        }
     }
-
     printf("\n%.*f\n\n",float_precision, sum);
     
 }
@@ -401,17 +410,13 @@ void RpnFunc(TreeNode* ast){
 
 void somatorio(std::string variavel,float a, float b, TreeNode* ast, HashTable hash){
     float sum = 0.0;
+    RPN_Walk_Errors_sum(ast,variavel,hash);
+    if(not_existId){
+        printf("\n\n");
+        return;
+    }
     for (int i = a; i <= b; i++) {
-        if(!not_existId){
-            sum += RPN_Walk_somatorio(ast, variavel,i,hash);
-        }else{
-            printf("\nUndefined symbol [");
-            std::cout << idName << "]";
-            printf("\n\n");
-            not_existId = false;
-            return;
-        }
-        
+        sum += RPN_Walk_somatorio(ast, variavel,i,hash); 
     }
     printf("\n%.*f\n\n",float_precision, sum);
 }
@@ -553,59 +558,147 @@ std::vector<std::vector<float>>* multiplyByNumber(const std::vector<std::vector<
     return result;
 }
 
+void asterisco_plot(int j, double x , double stepY, double minY, double maxY){
+    
+    for(int i = 25; i > 0; i--){
+        double y = ((double)i / 25) * (maxY - minY) + minY;
+            if (std::abs(x - y ) < stepY/2){
+                matriz_plot[i][j] = '*';
+                break;
+            }
+    }
+}
 
 void plotGraph(TreeNode *plot, double minX, double maxX, double minY, double maxY, int resolutionX, int resolutionY, HashTable hash) {
+
     double stepX = (maxX - minX) / (resolutionX);
     double stepY = (maxY - minY) / (resolutionY);
     double aux_lo = minX;
+    double aux_hi = maxX;
+    double aux_lo_y = minY;
+    double aux_hi_y = maxY;
 
-    // Desenhar a linha horizontal do eixo x
-    for (int j = 0; j < resolutionX; ++j) {
-        double x = minX + j * stepX;
-        if (std::abs(x) < stepX / 2.0) {
-            std::cout << "-";
-        } else {
-            std::cout << " ";
-        }
-    }
-    std::cout << std::endl;
+    bool printx = false;
+    
 
-    for (int i = 0; i < resolutionY; ++i) {
+
+    for (int i = resolutionY; i > 0; i--) {
         double y = minY + i * stepY;
-        // Desenhar a linha vertical do eixo y
-        std::cout << "|";
-        for (int j = 1; j < resolutionX - 1; ++j) {
+         
+        for (int j = 1; j <= resolutionX; j++) {
             double x = minX + j * stepX;
-            if (std::abs(RPN_Walk_calculatinge(plot,x,hash) - y) < stepY / 2.0) {
-                std::cout << "*";
-            } else {
-                std::cout << " ";
+            setContador();
+            //if (std::abs(RPN_Walk_calculatinge(plot,x,hash) - y ) < stepY/2) {
+                //matriz_plot[i][j] = '*';
+             //}
+            asterisco_plot(j, RPN_Walk_calculatinge(plot,x,hash), stepY, minY, maxY);
+        }
+
+            continue;
+        
+        
+    }
+    printf("\n");
+    for (int i = resolutionY; i > 0; i--) {
+        for (int j = 1; j <= resolutionX; j++) {
+            printf("%c", matriz_plot[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+}
+
+void withdrawAxis(){
+    for (int i = 25; i > 0; i--) {
+        for (int j = 1; j <= 80; j++) {
+            if(matriz_plot[i][j] == '|' || matriz_plot[i][j] == '-'){
+                matriz_plot[i][j] = ' ';
             }
         }
-        std::cout << "|" << std::endl;
     }
+}
 
-    // Desenhar a linha horizontal do eixo x
-    for (int j = 0; j < resolutionX; ++j) {
-        double x = minX + j * stepX;
-        if (std::abs(x) < stepX / 2.0) {
-            std::cout << "-";
-        } else {
-            std::cout << " ";
+void putAxis(double minX, double maxX, double minY, double maxY, int resolutionX, int resolutionY){
+    double stepX = (maxX - minX) / (resolutionX);
+    double stepY = (maxY - minY) / (resolutionY);
+    bool printx = false;
+    double menory = abs(maxY);
+    double menorx= abs(maxX);
+    int i_menory;
+    int j_menorx;
+
+    for (int i = resolutionY; i > 0 ; i--) {
+        double y = minY + i * stepY;
+        if(abs(y) < menory){
+            if(menory-abs(y) < 0.0000001){
+                if(y > 0){
+                    menory = abs(y);
+                    i_menory = i;
+                }
+            }else{
+            menory = abs(y);
+            i_menory = i;
+            }
         }
+        // printf("y: %f\n", y);
+        //     if (draw_axix && y <= 0.15 && y >= -0.1) {
+        //         printx = true;
+        //     }
+
+        for (int j = 1; j <= resolutionX; j++) {
+            double x = minX + j * stepX;
+            if(abs(x) < menorx){
+                menorx = abs(x);
+                j_menorx = j;
+            }
+             if(matriz_plot[i][j] != '*'){
+            //     if(printx){
+            //         matriz_plot[i][j] = '-';
+            //     }else
+            //     if (draw_axix && x == 0) {
+            //         matriz_plot[i][j] = '|';
+            //     }else{
+                     matriz_plot[i][j] = ' ';
+            //     }
+            }       
     }
-    std::cout << std::endl;
+    
+}
+    for(int k = 1; k <= 25; k++){
+        matriz_plot[k][j_menorx] = '|';
+    }
+    for(int k = 1; k <= 80; k++){
+        matriz_plot[i_menory][k] = '-';
+    }
+    
 }
 
 void plotarGrafico(TreeNode *plot, HashTable hash){
     if(plot == NULL){
         printf("\nNo function defined! \n\n");
         return;
-    }
-    if(not_existId){
-        printf("\n\n");
     }else{
-        
-        plotGraph(plot, h_view_lo, h_view_hi, v_view_lo, v_view_hi, 80, 25, hash);
+        RPN_Walk_Errors_2(plot, hash);
+        if(not_existId){
+            printf("\n\n");
+            return;
+        }else{
+            if(erase_plot || trocouVorH_view){
+                for (int i = 25; i >0 ; i--) {
+                    for (int j = 1; j <= 80; j++) {
+                        matriz_plot[i][j] = ' ';
+                    }
+                }
+                trocouVorH_view = false;
+            }
+            if(!draw_axix){
+                withdrawAxis();
+            }else{
+                putAxis(h_view_lo, h_view_hi, v_view_lo, v_view_hi, 80, 25);
+
+            }
+            plotGraph(plot, h_view_lo, h_view_hi, v_view_lo, v_view_hi, 80, 25, hash);
+        }
     }
+    
 }

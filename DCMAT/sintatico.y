@@ -8,10 +8,13 @@
 #include <cmath>
 #include <string.h>
 #include "ast.hpp"
+#include "sintatico.tab.h"
+
 
 #define QUIT_VALUE 329179
 #define CONTINUE_VALUE 0
 
+bool erro = false;
 
 extern int yylex();
 extern char* yytext;
@@ -19,10 +22,13 @@ extern char* yytext;
 extern int yychar;
 extern void yylex_destroy(void);
 
+
 extern bool not_existId;
 bool matriz_exp = false;
 extern bool break_matriz;
 bool dont_worry = false;
+
+extern char* str_buffer;
 
 std::string universal;
 std::string str;
@@ -31,18 +37,18 @@ std::string str_aux;
 std::string str_aux2;
 
 std::vector<std::vector<float>> *matriz_global;
-
 std::vector<std::vector<float>> *matriz_exp_global;
-
-HashTable hashTable;
 
 std::list<float> listMatriz;
 std::list<int> elemtsPlinha;
 
 int elementosLinha = 0;
 int maisElementosLinha = 0;
-float valorExp = 0;
 int sinal = 1;
+float valorExp = 0;
+
+
+HashTable hashTable;
 
 TreeNode* AST = NULL;
 TreeNode* PLOT_EXP = NULL;
@@ -50,6 +56,9 @@ TreeNode* PLOT_EXP = NULL;
 extern void printarExpressao();
 extern void AtribuirValor();
 extern void yyerror(char*); 
+extern void setBooleans();
+
+
 
 %}
 
@@ -120,7 +129,7 @@ float real;
 %type <string_id> IDENTIFIER X
 %type <real> NUM_REAL ValorIntOrFloat Expressao_matematica_Direta
 
-%type <ast> Integral_Complemento Integral_DivMul Integral_aux Funcao_Integral continua_id Exp_aux Exp_Complemento Exp_DivMul Expressao_matematica
+%type <ast> Integral_Complemento Integral_DivMul Integral_aux Funcao_Integral continua_id Exp_aux Exp_Complemento Exp_DivMul Expressao_matematica IntegralPowRemainder Exp_PowRemainder
 
 %%
 
@@ -170,7 +179,7 @@ ComandosPlus: Grafico {}
             | Matrix {}
 
 // --------------------------------------------------------
-Grafico: PLOT InfoPlot SEMICOLON {plotarGrafico(PLOT_EXP, hashTable); dont_worry = false; }
+Grafico: PLOT InfoPlot SEMICOLON {plotarGrafico(PLOT_EXP, hashTable); dont_worry = false; not_existId = false;}
 
 
 InfoPlot: L_PAREN {dont_worry = true;} Funcao_Integral R_PAREN {PLOT_EXP = AST; }
@@ -223,10 +232,10 @@ IntegralAux: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat COMMA Funcao_Inte
 
 
 
-Expressao_matematica_Direta: Funcao_Integral {printarExpressao(); Delete_Tree(AST);}
+Expressao_matematica_Direta: Funcao_Integral { if(!dont_worry){valorExp = calculate_Exp(AST, hashTable);} printarExpressao(); Delete_Tree(AST);}
 
 
-Funcao_Integral: Integral_aux { AST = $1; if(!dont_worry){valorExp = calculate_Exp(AST, hashTable);} }
+Funcao_Integral:  Integral_aux { AST = $1; }
 
 
 Integral_aux: Integral_DivMul { $$ = $1;}
@@ -249,8 +258,8 @@ Integral_aux: Integral_DivMul { $$ = $1;}
                                                 $$ = aux;
                                         }
 
-Integral_DivMul: Integral_Complemento { $$ = $1;}
-        | Integral_DivMul MULTIPLY Integral_Complemento {       TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+Integral_DivMul: IntegralPowRemainder { $$ = $1;}
+        | Integral_DivMul MULTIPLY IntegralPowRemainder {       TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                                 aux->node_type = MUL;
                                                                 aux->value = 0;
                                                                 aux->left = $1;
@@ -258,7 +267,7 @@ Integral_DivMul: Integral_Complemento { $$ = $1;}
                                                                 $$ = aux;
                                                         }
  
-        | Integral_DivMul DIV  Integral_Complemento {   TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+        | Integral_DivMul DIV  IntegralPowRemainder {   TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                         aux->node_type = DI;
                                                         aux->value = 0;
                                                         
@@ -266,6 +275,25 @@ Integral_DivMul: Integral_Complemento { $$ = $1;}
                                                         aux->right = $3;
                                                         $$ = aux;
                                                         }
+           
+
+IntegralPowRemainder: Integral_Complemento { $$ = $1;}
+        | IntegralPowRemainder POW Integral_Complemento { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+                                                        aux->node_type = POW_NODE;
+                                                        aux->value = 0;
+                                                        
+                                                        aux->left = $1;
+                                                        aux->right = $3;
+                                                        $$ = aux;
+                                                        }
+        | IntegralPowRemainder REMAINDER Integral_Complemento { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+                                                        aux->node_type = REM;
+                                                        aux->value = 0;
+                                                        
+                                                        aux->left = $1;
+                                                        aux->right = $3;
+                                                        $$ = aux;
+                                                        }                                    
 
 
 Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
@@ -277,7 +305,7 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
                                                 $$ = (TreeNode*) aux;
                                                 }
 
-      | Sinal IDENTIFIER {str_aux  = strdup($2);  } continua_id {   
+      | Sinal IDENTIFIER {str_aux  = strdup($2); str = strdup($2); } continua_id {   
                                         
                                         TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                         aux->node_type = IDENTIFIER_NODE;
@@ -288,7 +316,7 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
                                         aux->value = $1*(*(static_cast<float*>(hashTable.search($2))));
                                         }else if(hashTable.getType($2)== 1){
                                                 aux->value = 0;
-                                                multiplyMatrixByScalar(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search($2))), $1);
+                                                aux->matriz_a = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search($2))), $1);
                                                 matriz_exp = true;
                                                 // if((*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str)))).size() == 2){
                                                 //         return CONTINUE_VALUE;
@@ -303,7 +331,7 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
                                         $$ = (TreeNode*) aux; 
                         }
 
-      | COS L_PAREN  Integral_Complemento  R_PAREN {    TreeNode* cosNode = (TreeNode*)malloc(sizeof(struct node));
+      | COS L_PAREN  Integral_aux  R_PAREN {    TreeNode* cosNode = (TreeNode*)malloc(sizeof(struct node));
                                                         
                                                         cosNode->node_type = COS_NODE;
                                                         cosNode->value = 0;
@@ -313,15 +341,15 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
                                                         $$ = (TreeNode*) cosNode;
                                                 }
 
-      | SEN L_PAREN  Integral_Complemento  R_PAREN {    TreeNode* senNode = (TreeNode*)malloc(sizeof(struct node));
+      | SEN L_PAREN  Integral_aux  R_PAREN {    TreeNode* senNode = (TreeNode*)malloc(sizeof(struct node));
                                                         senNode->node_type = SEN_NODE;
                                                         senNode->value = 0;
-                                                    
+
                                                         senNode->left = $3; // AST do complemento
                                                         senNode->right = NULL;
                                                         $$ = (TreeNode*) senNode;
                                                 }
-      | TAN L_PAREN  Integral_Complemento  R_PAREN {    TreeNode* tanNode = (TreeNode*)malloc(sizeof(struct node));
+      | TAN L_PAREN  Integral_aux  R_PAREN {    TreeNode* tanNode = (TreeNode*)malloc(sizeof(struct node));
                                                         tanNode->node_type = TAN_NODE;
                                                         tanNode->value = 0;
                                                     
@@ -330,17 +358,16 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
                                                         $$ = (TreeNode*) tanNode;
                                                 }
 
-      | X {     TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+      | Sinal X {     TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                 aux->node_type = X_NODE;
                                 aux->value = 0;
-                               
-                                                      
+                                aux->sinal = $1;
                                 aux->left = NULL;
                                 aux->right = NULL;
                                 $$ = (TreeNode*) aux; 
                         }
 
-      | ABS L_PAREN Integral_Complemento R_PAREN {      TreeNode* absNode = (TreeNode*)malloc(sizeof(struct node));
+      | ABS L_PAREN Integral_aux R_PAREN {      TreeNode* absNode = (TreeNode*)malloc(sizeof(struct node));
                                                         absNode->node_type = ABS_NODE;
                                                         absNode->value = 0;
                                                       
@@ -399,21 +426,35 @@ Exp_aux: Exp_DivMul {  $$ = $1;}
                                                 aux->right = $3;
                                                 $$ = aux;}
 
-Exp_DivMul: Exp_Complemento { $$ = $1; }
-        | Exp_DivMul MULTIPLY Exp_Complemento {    TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+Exp_DivMul: Exp_PowRemainder { $$ = $1; }
+        | Exp_DivMul MULTIPLY Exp_PowRemainder {    TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                                 aux->node_type = MUL;
                                                                 aux->value = 0;
                                                                 aux->left = $1;
                                                                 aux->right = $3;
                                                                 $$ = aux;}
 
-        | Exp_DivMul DIV Exp_Complemento { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+        | Exp_DivMul DIV Exp_PowRemainder { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                         aux->node_type = DI;
                                                         aux->value = 0;
                                                         aux->left = $1;
                                                         aux->right = $3;
-                                                        $$ = aux;}           
-                                        
+                                                        $$ = aux;}       
+  
+
+Exp_PowRemainder: Exp_Complemento { $$ = $1; }
+        | Exp_PowRemainder POW Exp_Complemento { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+                                                        aux->node_type = POW_NODE;
+                                                        aux->value = 0;
+                                                        aux->left = $1;
+                                                        aux->right = $3;
+                                                        $$ = aux;}
+        | Exp_PowRemainder REMAINDER Exp_Complemento { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+                                                        aux->node_type = REM;
+                                                        aux->value = 0;
+                                                        aux->left = $1;
+                                                        aux->right = $3;
+                                                        $$ = aux;}                                   
 
 Exp_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                 aux->node_type = NUMBER;
@@ -424,40 +465,46 @@ Exp_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeo
 
         | Sinal IDENTIFIER  {TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                         aux->node_type = IDENTIFIER_NODE;
-                                        if(hashTable.search(str) == NULL){
+                                        if(hashTable.search($2) == NULL){
                                                 aux->value = 0;
-                                        } else if(hashTable.getType(str)== 0){
-                                        aux->value = $1*(*(static_cast<float*>(hashTable.search(str))));
-                                        }else if(hashTable.getType(str)== 1){
-                                                aux->value = 0;
-                                                multiplyMatrixByScalar(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str))), $1);
-                                                matriz_exp = true;
                                                 
+                                        }else if(hashTable.getType($2)== 0){
+                                        aux->value = $1*(*(static_cast<float*>(hashTable.search($2))));
+                                        }else if(hashTable.getType($2)== 1){
+                                                aux->value = 0;
+                                                aux->matriz_a = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search($2))), $1);
+                                                matriz_exp = true;
+                                                // if((*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str)))).size() == 2){
+                                                //         return CONTINUE_VALUE;
+                                                // }
+
                                         }
-                                       
+                                        
                                         aux->name = new std::string($2);
+                                        
                                         aux->left = NULL;
                                         aux->right = NULL;
                                         $$ = (TreeNode*) aux; }
 
-        | COS L_PAREN Exp_Complemento R_PAREN {  TreeNode* cosNode = (TreeNode*)malloc(sizeof(struct node));
+        | COS L_PAREN Exp_aux R_PAREN {  TreeNode* cosNode = (TreeNode*)malloc(sizeof(struct node));
                                                         cosNode->node_type = COS_NODE;
                                                         cosNode->left = $3; // AST do complemento
                                                         cosNode->right = NULL;
                                                         $$ = (TreeNode*) cosNode;}
-        | SEN L_PAREN Exp_Complemento R_PAREN {  TreeNode* senNode = (TreeNode*)malloc(sizeof(struct node));
+        | SEN L_PAREN Exp_aux R_PAREN {  TreeNode* senNode = (TreeNode*)malloc(sizeof(struct node));
                                                         senNode->node_type = SEN_NODE;
                                                         senNode->left = $3; // AST do complemento
                                                         senNode->right = NULL;
                                                         $$ = (TreeNode*) senNode;}
-        | TAN L_PAREN Exp_Complemento R_PAREN { TreeNode* tanNode = (TreeNode*)malloc(sizeof(struct node));
+        | TAN L_PAREN Exp_aux R_PAREN { TreeNode* tanNode = (TreeNode*)malloc(sizeof(struct node));
                                                         tanNode->node_type = TAN_NODE;
                                                         tanNode->left = $3; // AST do complemento
                                                         tanNode->right = NULL;
                                                         $$ = (TreeNode*) tanNode; }
-        | X { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+        | Sinal X { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                 aux->node_type = X_NODE;
                                 aux->value = 0;
+                                aux->sinal = $1;
                                 aux->left = NULL;
                                 aux->right = NULL;
                                 $$ = (TreeNode*) aux; }
@@ -476,7 +523,7 @@ Exp_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeo
             eNode->right = NULL;
             $$ = (TreeNode*) eNode;
             }
-        | ABS L_PAREN Exp_Complemento R_PAREN { TreeNode* absNode = (TreeNode*)malloc(sizeof(struct node));
+        | ABS L_PAREN Exp_aux R_PAREN { TreeNode* absNode = (TreeNode*)malloc(sizeof(struct node));
                                                         absNode->node_type = ABS_NODE;
                                                         absNode->left = $3; // AST do complemento
                                                         absNode->right = NULL;
@@ -489,21 +536,36 @@ Exp_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeo
 %%
 
 void yyerror(char *s) {
-	if(EOL) {
+	
+        if(EOL) {
                 printf("\nSYNTAX ERROR: Incomplete Command\n\n");
-        }else
-                printf("\nSYNTAX ERROR: [%s]\n\n", yytext);
+        }else{
+        printf("\nSYNTAX ERROR: [%s]", yytext);
+                erro = true;
+        }
+        
 }
+
 
 int main(int argc, char** argv)
 {
+
     hashTable = HashTable();
     setDefaultValues();
     int input = 0;
 
     while(input != QUIT_VALUE){
+    if(erro)
+    {
+        printf("\n\n");
+        erro = false;
+    }
+    setBooleans();
     printf(">");
+
     input  = yyparse();
+   
+   
     
     } 
     
@@ -538,8 +600,7 @@ void AtribuirValor(){
 
         }else if(!not_existId && matriz_exp){
                 if(!break_matriz){
-                
-                printf("aa");
+
                 hashTable.insert(str_aux2,matriz_exp_global);
 
                 }else{
@@ -549,4 +610,12 @@ void AtribuirValor(){
         } 
         not_existId = false; 
         matriz_exp = false; 
+}
+
+void setBooleans()
+{
+        matriz_exp = false;
+        not_existId = false;
+        dont_worry = false;
+        break_matriz = false;
 }

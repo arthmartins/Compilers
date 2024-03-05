@@ -8,8 +8,8 @@ CFLAGS = -std=c++23 -g -I. -w
 
 $(BIN): $(L_SOURCE) $(Y_SOURCE)
 	$(LEX) $(L_SOURCE)
-	$(YY) -d $(Y_SOURCE)
+	$(YY) -d  $(Y_SOURCE)
 	$(CC) *.c *cpp $(CFLAGS) -o $(BIN)
 
 run: 
-	./$(BIN)
+	./$(BIN) 

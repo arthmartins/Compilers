@@ -11,7 +11,10 @@
 extern YYSTYPE yylval;
 extern std::string str;
 
+
+
 %}
+
 
 
 
@@ -57,7 +60,7 @@ extern std::string str;
 "erase"          { return ERASE; }
 "on"             { return ON; }
 "set"            { return SET; }
-"x"              {  return X; }
+"x"|"X"             {  return X; }
 
 "+"          {  return PLUS;}
 "-"          {  return MINUS;}
@@ -96,5 +99,4 @@ extern std::string str;
 }
 
 %%
-
 

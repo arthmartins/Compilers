@@ -10,6 +10,7 @@ extern int yychar;
 extern int linha_anterior;
 extern int coluna_anterior;
 extern char erro_linha[2048];
+
 extern void pick_erro_linha(int linha);
 
 void yyerror(void *s); 
