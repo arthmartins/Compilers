@@ -39,11 +39,9 @@ void setAxis(int valor);
 
 void setErase(int valor);
 
-void setConnectDots(int valor);
-
 void setFloatPrecision(int valor);
 
-void setIntegralSteps(int valor);
+void setIntegralSteps(float valor);
 
 std::vector<std::vector<float>>* createMatriz(std::list<float>& listaMatriz, std::list<int>& ElementsPLinha, int numerodeColunas);
 

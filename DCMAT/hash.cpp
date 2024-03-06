@@ -63,7 +63,7 @@ void HashTable::printAll() {
             if (node.type == 0) {
                 cout << "FLOAT" <<  endl;
             }else if(node.type == 1){
-                cout << "MATRIX [" << (*node.matriz_hash).size() << "] [" << node.matriz_hash[0].size() << "]" << endl;
+                cout << "MATRIX [" << (*node.matriz_hash).size() << "] [" << (*node.matriz_hash)[0].size() << "]" << endl;
             }
         }
     }

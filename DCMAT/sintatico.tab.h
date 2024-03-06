@@ -113,7 +113,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 65 "sintatico.y"
+#line 69 "sintatico.y"
 
         
 TreeNode* ast;

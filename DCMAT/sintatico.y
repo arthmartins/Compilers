@@ -22,12 +22,15 @@ extern char* yytext;
 extern int yychar;
 extern void yylex_destroy(void);
 
+extern void restartParser();
 
+extern bool erro_lexico;
 extern bool not_existId;
-bool matriz_exp = false;
 extern bool break_matriz;
 bool dont_worry = false;
+bool matriz_exp = false;
 
+extern int float_precision;
 extern char* str_buffer;
 
 std::string universal;
@@ -59,8 +62,9 @@ extern void yyerror(char*);
 extern void setBooleans();
 
 
-
 %}
+
+
 
 %union{
         
@@ -129,7 +133,7 @@ float real;
 %type <string_id> IDENTIFIER X
 %type <real> NUM_REAL ValorIntOrFloat Expressao_matematica_Direta
 
-%type <ast> Integral_Complemento Integral_DivMul Integral_aux Funcao_Integral continua_id Exp_aux Exp_Complemento Exp_DivMul Expressao_matematica IntegralPowRemainder Exp_PowRemainder
+%type <ast> Integral_Complemento Integral_DivMul Integral_aux Funcao_Integral continua_id Exp_aux Exp_Complemento Exp_DivMul Expressao_matematica Aqui_Minus IntegralPowRemainder Exp_PowRemainder
 
 %%
 
@@ -155,9 +159,9 @@ FuncoesSet: H_VIEW Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat { setH_view
             | V_VIEW Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat {setV_view($2*$3, $5*$6);}
             | AXIS ONorOFF {setAxis($2);}
             | ERASE PLOT ONorOFF {setErase($3);}
-            | CONNECT_DOTS ONorOFF {setConnectDots($2);}
+            | CONNECT_DOTS ONorOFF { printf("\nComando não implementado\n\n"); }
             | FLOAT PRECISION Sinal NUM_INTEGER {setFloatPrecision($3*$4);}
-            | INTEGRAL_STEPS NUM_INTEGER {setIntegralSteps($2);}
+            | INTEGRAL_STEPS Sinal ValorIntOrFloat {setIntegralSteps($2*$3);}
 
 
 ValorIntOrFloat: NUM_INTEGER {$$ = $1;}
@@ -188,13 +192,13 @@ InfoPlot: L_PAREN {dont_worry = true;} Funcao_Integral R_PAREN {PLOT_EXP = AST; 
 
 // --------------------------------------------------------
 
-FuncaoRpn: RPN L_PAREN Funcao_Integral R_PAREN SEMICOLON {    RpnFunc(AST); /*Delete_Tree(AST);*/ }
+FuncaoRpn: RPN L_PAREN Funcao_Integral R_PAREN SEMICOLON {    RpnFunc(AST); Delete_Tree(AST); }
 
 // --------------------------------------------------------
 
 // ------------------    SUM  -----------------------------
 
-Sum: SUM L_PAREN IDENTIFIER COMMA NUM_INTEGER COLON NUM_INTEGER COMMA Funcao_Integral R_PAREN SEMICOLON {somatorio($3, $5, $7, AST,hashTable); /*Delete_Tree(AST);*/}
+Sum: SUM L_PAREN IDENTIFIER COMMA NUM_INTEGER COLON NUM_INTEGER COMMA Funcao_Integral R_PAREN SEMICOLON {somatorio($3, $5, $7, AST,hashTable); Delete_Tree(AST);}
 
 
 
@@ -205,8 +209,7 @@ Matrix: MATRIX EQUAL ChamaCreateMatrix {}
       | SOLVE LINEAR_SYSTEM SEMICOLON { solveLinearSystem(); }
 
 ChamaCreateMatrix: CreateMatrix {    
-                                 matriz_global = createMatriz(listMatriz,elemtsPlinha,maisElementosLinha); elementosLinha = 0; maisElementosLinha = 0;
- /* destruir listas aqui */ }
+                                 matriz_global = createMatriz(listMatriz,elemtsPlinha,maisElementosLinha); elementosLinha = 0; maisElementosLinha = 0; }
       
 
 CreateMatrix: L_SQUARE_BRACKET CreateMatrixAux R_SQUARE_BRACKET SEMICOLON {}
@@ -228,11 +231,11 @@ RepeatValuesMatrixTwo: COMMA L_SQUARE_BRACKET Sinal ValorIntOrFloat {elementosLi
 
 Integral: INTEGRATE L_PAREN IntegralAux R_PAREN SEMICOLON {}
 
-IntegralAux: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat COMMA Funcao_Integral { integrate($1*$2, $4*$5, AST,hashTable); /*Delete_Tree(AST);*/} // isso pode dar certo
+IntegralAux: Sinal ValorIntOrFloat COLON Sinal ValorIntOrFloat COMMA Funcao_Integral { integrate($1*$2, $4*$5, AST,hashTable); Delete_Tree(AST);} // isso pode dar certo
 
 
 
-Expressao_matematica_Direta: Funcao_Integral { if(!dont_worry){valorExp = calculate_Exp(AST, hashTable);} printarExpressao(); Delete_Tree(AST);}
+Expressao_matematica_Direta: Funcao_Integral { if(!dont_worry && !not_existId){valorExp = calculate_Exp(AST, hashTable);} printarExpressao(); Delete_Tree(AST);}
 
 
 Funcao_Integral:  Integral_aux { AST = $1; }
@@ -296,7 +299,7 @@ IntegralPowRemainder: Integral_Complemento { $$ = $1;}
                                                         }                                    
 
 
-Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+Integral_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
                                                 aux->node_type = NUMBER;
                                                 aux->value = $1*$2;
                                                 aux->left = NULL;
@@ -304,6 +307,16 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
                                                 aux->right = NULL;
                                                 $$ = (TreeNode*) aux;
                                                 }
+
+        |PLUS L_PAREN Integral_aux R_PAREN { $$ = $3; }
+                                                
+        |Aqui_Minus L_PAREN Integral_aux R_PAREN { TreeNode* aux = (TreeNode*)malloc(sizeof(struct node));
+                                                                aux->node_type = MUL;
+                                                                aux->value = 0;
+                                                                aux->left = $1;
+                                                                aux->right = $3;
+                                                                $$ = aux;
+                                                               }
 
       | Sinal IDENTIFIER {str_aux  = strdup($2); str = strdup($2); } continua_id {   
                                         
@@ -313,14 +326,15 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
                                                 aux->value = 0;
                                                 
                                         }else if(hashTable.getType($2)== 0){
+
                                         aux->value = $1*(*(static_cast<float*>(hashTable.search($2))));
+
                                         }else if(hashTable.getType($2)== 1){
+
                                                 aux->value = 0;
                                                 aux->matriz_a = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search($2))), $1);
                                                 matriz_exp = true;
-                                                // if((*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str)))).size() == 2){
-                                                //         return CONTINUE_VALUE;
-                                                // }
+                                                
 
                                         }
                                         
@@ -376,7 +390,7 @@ Integral_Complemento: Sinal  ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc
                                                         $$ = (TreeNode*) absNode;
                                                 }
 
-      | L_PAREN  Integral_aux R_PAREN  {$$ = $2;}
+      | L_PAREN Integral_aux R_PAREN  {$$ = $2;}
 
       | PI { TreeNode* piNode = (TreeNode*)malloc(sizeof(struct node));
             piNode->node_type = NUMBER;
@@ -400,10 +414,10 @@ continua_id: ATRIBUTE {str_aux2 = str_aux;} continua_atribute {}
 
 continua_atribute: Expressao_matematica SEMICOLON EOL { AtribuirValor(); Delete_Tree(AST); return CONTINUE_VALUE;}
 
-                | ChamaCreateMatrix EOL {sinal = 1; hashTable.insert(str,matriz_global);
-                /*Delete_Tree(AST);*/ not_existId = false; matriz_exp = false; return CONTINUE_VALUE;}
+                | ChamaCreateMatrix EOL {sinal = 1; if(!break_matriz){hashTable.insert(str,matriz_global); printMatriz(*matriz_global);}
+                        not_existId = false; matriz_exp = false; break_matriz = false; return CONTINUE_VALUE;}
                             
-
+Aqui_Minus: MINUS { $$ = (TreeNode*)malloc(sizeof(struct node)); $$->value = -1; $$->node_type = NUMBER; $$->left = NULL; $$->right = NULL; }
 
 
 
@@ -469,14 +483,13 @@ Exp_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeo
                                                 aux->value = 0;
                                                 
                                         }else if(hashTable.getType($2)== 0){
+                                                
                                         aux->value = $1*(*(static_cast<float*>(hashTable.search($2))));
+
                                         }else if(hashTable.getType($2)== 1){
                                                 aux->value = 0;
                                                 aux->matriz_a = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hashTable.search($2))), $1);
                                                 matriz_exp = true;
-                                                // if((*(static_cast<std::vector<std::vector<float>>*>(hashTable.search(str)))).size() == 2){
-                                                //         return CONTINUE_VALUE;
-                                                // }
 
                                         }
                                         
@@ -536,14 +549,15 @@ Exp_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeo
 %%
 
 void yyerror(char *s) {
-	
-        if(EOL) {
-                printf("\nSYNTAX ERROR: Incomplete Command\n\n");
-        }else{
+	if(!erro_lexico){
+        if(strcmp(yytext, "\n") != 0){
         printf("\nSYNTAX ERROR: [%s]", yytext);
                 erro = true;
-        }
-        
+                return;
+        }else
+                printf("\nSYNTAX ERROR: Incomplete Command\n\n");
+        }else
+                erro_lexico = false;
 }
 
 
@@ -562,10 +576,9 @@ int main(int argc, char** argv)
     }
     setBooleans();
     printf(">");
-
-    input  = yyparse();
-   
-   
+    input = yyparse();
+    restartParser();
+  
     
     } 
     
@@ -589,7 +602,7 @@ void printarExpressao(){
 
         matriz_exp =false; 
         not_existId = false; 
-        /*Delete_Tree(AST);*/
+        
 }
 
 void AtribuirValor(){
@@ -597,12 +610,13 @@ void AtribuirValor(){
          if(!not_existId && !matriz_exp){
 
                 hashTable.insert(str_aux2,valorExp);
+                printf("\n%*f\n\n", float_precision, valorExp);
 
         }else if(!not_existId && matriz_exp){
                 if(!break_matriz){
 
                 hashTable.insert(str_aux2,matriz_exp_global);
-
+                printMatriz(*matriz_exp_global);
                 }else{
                         break_matriz = false;
                 }

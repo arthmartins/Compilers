@@ -10,8 +10,11 @@
 
 extern YYSTYPE yylval;
 extern std::string str;
+bool erro_lexico = false;
 
-
+void restartParser() {
+    yyrestart(stdin);
+}
 
 %}
 
@@ -90,11 +93,11 @@ extern std::string str;
 \\ {}
 \0 {}
 
-\n { return EOL; }
+\n { return EOL;}
 
 [a-zA-Z]+[_0-9a-zA-Z]* { yylval.string_id = strdup(yytext);  str = strdup(yytext);  return IDENTIFIER; }
 
-. { printf("\nInvalid Symbol: %s\n\n", yytext); return 1;} 
+. { printf("\nInvalid Symbol: %s\n\n", yytext); erro_lexico = true; return 0;} 
 
 }
 

@@ -349,8 +349,13 @@ std::vector<std::vector<float>>* RPN_Walk_matriz(TreeNode* aux, HashTable hash){
                     matriz_ast = NULL;
                 }else
                 if(hash.getType(*aux->left->name) == 1 && hash.getType(*aux->right->name) == 1){
-                    //matriz_ast = addMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name))));
+
                     matriz_ast = addMatrices(*aux->left->matriz_a, *aux->right->matriz_a);
+
+                    aux->matriz_a = matriz_ast;
+                    aux->name = aux->left->name;
+                    
+
                 }else if(hash.getType(*aux->left->name) == 1) {    
                         printf("\nIncorrect type for operator '+' - have MATRIX and FLOAT\n\n");
                         break_matriz = true;
@@ -374,8 +379,9 @@ std::vector<std::vector<float>>* RPN_Walk_matriz(TreeNode* aux, HashTable hash){
                     matriz_ast = NULL;
                 }else
                 if(hash.getType(*aux->left->name) == 1 && hash.getType(*aux->right->name) == 1){
-                    //matriz_ast = subtractMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name))));
                     matriz_ast = subtractMatrices(*aux->left->matriz_a, *aux->right->matriz_a);
+                    aux->matriz_a = matriz_ast;
+                    aux->name = aux->left->name;
                 }
                 
                 else if(hash.getType(*aux->left->name) == 1) {    
@@ -393,63 +399,74 @@ std::vector<std::vector<float>>* RPN_Walk_matriz(TreeNode* aux, HashTable hash){
             case MUL:
                 if(!break_matriz){
                     if(aux->left->node_type == NUMBER && aux->right->node_type == IDENTIFIER_NODE){
+
                         matriz_ast = multiplyByNumber(*aux->right->matriz_a, aux->left->value);
+                        aux->matriz_a = matriz_ast;
+                        aux->name = aux->right->name;
+
                     }else if (aux->left->node_type == IDENTIFIER_NODE && aux->right->node_type == NUMBER){
                         matriz_ast = multiplyByNumber(*aux->left->matriz_a, aux->right->value);
+                        aux->matriz_a = matriz_ast;
+                        aux->name = aux->left->name;
                     }
                     else if(hash.getType(*aux->left->name) == 1 && hash.getType(*aux->right->name) == 1){
-                        //matriz_ast = multiplyMatrices(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), *(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name)))); 
                         matriz_ast = multiplyMatrices(*aux->left->matriz_a, *aux->right->matriz_a);
+                        aux->matriz_a = matriz_ast;
+                        aux->name = aux->left->name;
+
                     }else if(hash.getType(*aux->left->name) == 1) {    
-                       // matriz_ast = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->left->name))), aux->right->value);
                         matriz_ast = multiplyByNumber(*aux->left->matriz_a,aux->right->value);
+                        aux->matriz_a = matriz_ast;
+                        aux->name = aux->left->name;
+
                     }else if(hash.getType(*aux->right->name) == 1){
-                        //matriz_ast = multiplyByNumber(*(static_cast<std::vector<std::vector<float>>*>(hash.search(*aux->right->name))), aux->left->value);
                         matriz_ast = multiplyByNumber(*aux->right->matriz_a, aux->left->value);
+                        aux->matriz_a = matriz_ast;
+                        aux->name = aux->right->name;
                     }
                 }
              contador++;
                 break; 
             case SEN_NODE:
-                printf("Incorrect type for operator 'SEN' - have MATRIX\n\n");
+                printf("\nIncorrect type for operator 'SEN' - have MATRIX\n\n");
                 break_matriz = true;
                 contador++;
                 break;
             case COS_NODE:
-                printf("Incorrect type for operator 'COS' - have MATRIX\n\n");
+                printf("\nIncorrect type for operator 'COS' - have MATRIX\n\n");
                 break_matriz = true;
                 contador++;
                 break;
             case TAN_NODE:
-                printf("Incorrect type for operator 'TAN' - have MATRIX\n\n");
+                printf("\nIncorrect type for operator 'TAN' - have MATRIX\n\n");
                 break_matriz = true;
                 contador++;
                 break;
 
             case POW_NODE:
-                printf("Incorrect type for operator 'POW' - have MATRIX\n\n");
+                printf("\nIncorrect type for operator 'POW' - have MATRIX\n\n");
                 break_matriz = true;
                 contador++;
                 break;
             case REM:
-                printf("Incorrect type for operator 'REM' - have MATRIX\n\n");
+                printf("\nIncorrect type for operator 'REM' - have MATRIX\n\n");
                 break_matriz = true;
                 contador++;
                 break;
             case ABS_NODE:
-                printf("Incorrect type for operator 'ABS' - have MATRIX\n\n");
+                printf("\nIncorrect type for operator 'ABS' - have MATRIX\n\n");
                 break_matriz = true;
                 contador++;
                 break;
             case X_NODE:
-                printf("Incorrect type for operator 'x' - have MATRIX\n\n");
+                printf("\nIncorrect type for operator 'x' - have MATRIX\n\n");
                 break_matriz = true;
                 contador++;
                 break;
                 
         }
     }
-    //pega a root e imprime o valor
+    
 
     return matriz_ast;
 }

@@ -21,9 +21,9 @@ char matriz_plot[25][80];
 
 vector<vector<int>> matriz_aa(25, vector<int>(80, 0));
 
-std::vector<int> casas_decimais;
+std::vector<int>* casas_decimais;
 
-bool trocouVorH_view = false;
+static bool trocouVorH_view = false;
 
 bool break_matriz = false;
 
@@ -95,9 +95,6 @@ void setErase(int valor){
     erase_plot = valor;
 }
 
-void setConnectDots(int valor){
-    connect_dots = valor;
-}
 
 void setFloatPrecision(int valor){
     if(valor >= 0 && valor <= 8){
@@ -105,14 +102,15 @@ void setFloatPrecision(int valor){
     }else{
         printf("\nERROR: float precision must be from 0 to 8\n\n");
     }
-
 }
 
-void setIntegralSteps(int valor){
-    if(valor > 0)
-        integral_steps = valor;
-    else
+void setIntegralSteps(float valor){
+    if(valor < 0)
         printf("\nERROR: integral_steps must be a positive non-zero integer\n\n");
+    else if(valor - (int)valor != 0)
+        printf("\nERROR: integral_steps must be a positive non-zero integer\n\n");
+    else
+        integral_steps = valor;
 }
 
 void printAbout(){
@@ -135,6 +133,7 @@ std::vector<std::vector<float>>* createMatriz(std::list<float>& listaMatriz, std
 
     if(linhasMatriz > 10 || colunasMatriz >10){
         printf("\nERROR: Matrix limits out of boundaries.\n\n");
+        break_matriz = true;
         return matriz;
     }
     
@@ -193,22 +192,30 @@ void contaCasasDecimais(std::vector<std::vector<float>> matriz_aux){
                 variavel_contadora = num_casas_decimais;
             }
         }
-        casas_decimais.push_back(variavel_contadora);
+        (*casas_decimais).push_back(variavel_contadora);
         variavel_contadora = 0;
     }
 }
 
 void printMatriz(std::vector<std::vector<float>> matriz_aux)
 {
+    casas_decimais = new std::vector<int>;
+    int casas_float = 0;
+
     int espacos_p_pular = 0;
     contaCasasDecimais(matriz_aux);
-    for (int elemento : casas_decimais) {
+    for (int elemento : *casas_decimais) {
         espacos_p_pular += elemento-1;
     }
     
     int k = 0;
+    if(float_precision == 0){
+        casas_float = 1;
+    }else
+        casas_float = float_precision + 2;
+
     printf("\n+-");
-    for(int i = 0; i < (((float_precision+2)*matriz_aux[0].size())+matriz_aux[0].size()-1+espacos_p_pular) ; i++){
+    for(int i = 0; i < (((casas_float)*matriz_aux[0].size())+matriz_aux[0].size()-1+espacos_p_pular) ; i++){
         printf(" ");
     }
     printf("-+\n");
@@ -216,7 +223,7 @@ void printMatriz(std::vector<std::vector<float>> matriz_aux)
     for (int i = 0; i < matriz_aux.size(); ++i) {
         printf("| ");
         for (int j = 0; j < matriz_aux[0].size(); ++j) {
-            for(int l = 0; l < casas_decimais[k]-contar_casas_decimais(std::to_string(matriz_aux[i][j])); l++){
+            for(int l = 0; l < (*casas_decimais)[k]-contar_casas_decimais(std::to_string(matriz_aux[i][j])); l++){
                 printf(" ");
             }
             printf("%.*f ",float_precision, matriz_aux[i][j]);
@@ -228,12 +235,12 @@ void printMatriz(std::vector<std::vector<float>> matriz_aux)
     }
 
     printf("+-");
-    for(int i = 0; i < (((float_precision+2)*matriz_aux[0].size())+matriz_aux[0].size()-1+espacos_p_pular) ; i++){
+    for(int i = 0; i < (((casas_float)*matriz_aux[0].size())+matriz_aux[0].size()-1+espacos_p_pular) ; i++){
         printf(" ");
     }
     printf("-+\n\n");
     
-    casas_decimais.clear();
+    delete (casas_decimais);
 }
 
 
@@ -272,7 +279,8 @@ float determinanteSubmatriz(const std::vector<std::vector<float>>& matriz, int t
 
 void determinanteMatriz() {
     int tamanho = (*matriz).size();
-    if (tamanho == 0 || matriz[0].size() != tamanho) {
+
+    if (tamanho == 0 || (*matriz)[0].size() != tamanho) {
         
         std::cerr << std::endl << "Matrix format incorrect!" << std::endl << std::endl;
         
@@ -354,10 +362,11 @@ void solveLinearSystem() {
     }
 
 
-    std::cout << "Matrix x:" << std::endl;
+    std::cout << std::endl << "Matrix x:" << std::endl << std::endl;
     for (int i = 0; i < linhasMatriz; ++i) {
-        std::cout << solucao[i] << std::endl;
+        printf("%.*f\n",float_precision, solucao[i]);
     }
+    printf("\n");
 
     
 }
@@ -387,7 +396,10 @@ void printValorSimbolo(std::string name, HashTable hash){
 
 void integrate(float a, float b, TreeNode* ast, HashTable hash) {
     float sum = 0.0;
-
+    if(b<a){
+        printf("\nERROR: lower limit must be smaller than upper limit\n\n");
+        return;
+    }
     float dx = (b - a) / integral_steps;
     RPN_Walk_Errors_2(ast, hash);
     if(not_existId){
@@ -404,6 +416,7 @@ void integrate(float a, float b, TreeNode* ast, HashTable hash) {
 
 void RpnFunc(TreeNode* ast){
     printf("\n");
+    printf("Expression in RPN format:\n\n");
     RPN_Walk(ast, float_precision);
     printf("\n\n");
 }
@@ -439,9 +452,7 @@ void printValorCalculoExp(float valor){
 }
 
 void multiplyMatrixByScalar(std::vector<std::vector<float>>& matrix, int scalar) {
-    // Iterar sobre cada linha da matriz
     for (auto& row : matrix) {
-        // Multiplicar cada elemento da linha pelo escalar
         for (float& element : row) {
             element *= scalar;
         }
@@ -466,23 +477,18 @@ std::vector<std::vector<float>>* solve_Matriz_expressao(TreeNode* ast, HashTable
 std::vector<std::vector<float>>* addMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2) {
     std::vector<std::vector<float>>* result = new std::vector<std::vector<float>>;;
 
-    // Verificar se as matrizes têm o mesmo tamanho
     if (matrix1.size() != matrix2.size() || matrix1[0].size() != matrix2[0].size()) {
         std::cerr << "\nIncorrect dimensions for operator '+' - have MATRIX [" << matrix1.size() <<"] ["<< matrix1[0].size() <<"] and MATRIX ["<< matrix2.size() << "] ["<< matrix2[0].size() <<"]\n\n";
         break_matriz = true;
-        return result; // Retornar uma matriz vazia em caso de erro
+        return result; 
     }
 
-    // Iterar sobre cada linha das matrizes
     for (size_t i = 0; i < matrix1.size(); ++i) {
         std::vector<float> new_row;
-        // Iterar sobre cada elemento das linhas
         for (size_t j = 0; j < matrix1[i].size(); ++j) {
-            // Somar os elementos correspondentes das duas matrizes
             float sum = matrix1[i][j] + matrix2[i][j];
             new_row.push_back(sum);
         }
-        // Adicionar a nova linha ao resultado
         result->push_back(new_row);
     }
 
@@ -492,23 +498,20 @@ std::vector<std::vector<float>>* addMatrices(std::vector<std::vector<float>> mat
 std::vector<std::vector<float>>* subtractMatrices(std::vector<std::vector<float>> matrix1, std::vector<std::vector<float>> matrix2) {
     std::vector<std::vector<float>>* result = new std::vector<std::vector<float>>;
 
-    // Verificar se as matrizes têm o mesmo tamanho
     if (matrix1.size() != matrix2.size() || matrix1[0].size() != matrix2[0].size()) {
         std::cerr << "\nIncorrect dimensions for operator '-' - have MATRIX [" << matrix1.size() <<"] ["<< matrix1[0].size() <<"] and MATRIX ["<< matrix2.size() << "] ["<< matrix2[0].size() <<"]\n\n";
         break_matriz = true;
-        return nullptr; // Retornar uma matriz vazia em caso de erro
+        return nullptr; 
     }
 
-    // Iterar sobre cada linha das matrizes
+
     for (size_t i = 0; i < matrix1.size(); ++i) {
         std::vector<float> new_row;
-        // Iterar sobre cada elemento das linhas
         for (size_t j = 0; j < matrix1[i].size(); ++j) {
-            // Subtrair os elementos correspondentes das duas matrizes
             float diff = matrix1[i][j] - matrix2[i][j];
             new_row.push_back(diff);
         }
-        // Adicionar a nova linha ao resultado
+
         result->push_back(new_row);
     }
 
@@ -521,18 +524,18 @@ std::vector<std::vector<float>>* multiplyMatrices(const std::vector<std::vector<
     int m2_rows = matrix2.size();
     int m2_cols = matrix2[0].size();
 
-    // Verificar se as dimensões das matrizes são válidas para a multiplicação
+
     if (m1_cols != m2_rows) {
         std::cerr << "\nIncorrect dimensions for operator '*' - have MATRIX [" << m1_rows <<"]["<<m1_cols <<"] and MATRIX ["<< m2_rows <<"]["<< m2_cols <<"]\n\n";
-        // Aqui você deve decidir o que fazer em caso de erro. Por exemplo, lançar uma exceção.
+  
         break_matriz = true;
         return nullptr;
     }
 
-    // Criar uma matriz resultante com tamanho correto
+  
     std::vector<std::vector<float>>* result = new std::vector<std::vector<float>>(m1_rows, std::vector<float>(m2_cols, 0));
 
-    // Multiplicar as matrizes
+  
     for (int i = 0; i < m1_rows; ++i) {
         for (int j = 0; j < m2_cols; ++j) {
             for (int k = 0; k < m1_cols; ++k) {
@@ -545,10 +548,10 @@ std::vector<std::vector<float>>* multiplyMatrices(const std::vector<std::vector<
 }
 
 std::vector<std::vector<float>>* multiplyByNumber(const std::vector<std::vector<float>>& matrix, float scalar) {
-    // Criar uma matriz resultante com o mesmo tamanho da matriz original
+   
     std::vector<std::vector<float>>* result = new std::vector<std::vector<float>>(matrix.size(), std::vector<float>(matrix[0].size()));
 
-    // Multiplicar cada elemento da matriz pelo escalar
+   
     for (size_t i = 0; i < matrix.size(); ++i) {
         for (size_t j = 0; j < matrix[i].size(); ++j) {
             (*result)[i][j] = matrix[i][j] * scalar;
@@ -561,7 +564,7 @@ std::vector<std::vector<float>>* multiplyByNumber(const std::vector<std::vector<
 void asterisco_plot(int j, double x , double stepY, double minY, double maxY){
     
     for(int i = 25; i > 0; i--){
-        double y = ((double)i / 25) * (maxY - minY) + minY;
+        double y = ((double)i / (25+1)) * (maxY - minY) + minY;
             if (std::abs(x - y ) < stepY/2){
                 matriz_plot[i][j] = '*';
                 break;
@@ -588,9 +591,7 @@ void plotGraph(TreeNode *plot, double minX, double maxX, double minY, double max
         for (int j = 1; j <= resolutionX; j++) {
             double x = minX + j * stepX;
             setContador();
-            //if (std::abs(RPN_Walk_calculatinge(plot,x,hash) - y ) < stepY/2) {
-                //matriz_plot[i][j] = '*';
-             //}
+            
             asterisco_plot(j, RPN_Walk_calculatinge(plot,x,hash), stepY, minY, maxY);
         }
 
@@ -640,10 +641,7 @@ void putAxis(double minX, double maxX, double minY, double maxY, int resolutionX
             i_menory = i;
             }
         }
-        // printf("y: %f\n", y);
-        //     if (draw_axix && y <= 0.15 && y >= -0.1) {
-        //         printx = true;
-        //     }
+        
 
         for (int j = 1; j <= resolutionX; j++) {
             double x = minX + j * stepX;
@@ -652,14 +650,9 @@ void putAxis(double minX, double maxX, double minY, double maxY, int resolutionX
                 j_menorx = j;
             }
              if(matriz_plot[i][j] != '*'){
-            //     if(printx){
-            //         matriz_plot[i][j] = '-';
-            //     }else
-            //     if (draw_axix && x == 0) {
-            //         matriz_plot[i][j] = '|';
-            //     }else{
+           
                      matriz_plot[i][j] = ' ';
-            //     }
+            
             }       
     }
     
@@ -684,6 +677,7 @@ void plotarGrafico(TreeNode *plot, HashTable hash){
             return;
         }else{
             if(erase_plot || trocouVorH_view){
+                
                 for (int i = 25; i >0 ; i--) {
                     for (int j = 1; j <= 80; j++) {
                         matriz_plot[i][j] = ' ';
