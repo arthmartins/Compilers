@@ -392,17 +392,17 @@ Integral_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(
 
       | L_PAREN Integral_aux R_PAREN  {$$ = $2;}
 
-      | PI { TreeNode* piNode = (TreeNode*)malloc(sizeof(struct node));
+      | Sinal PI { TreeNode* piNode = (TreeNode*)malloc(sizeof(struct node));
             piNode->node_type = NUMBER;
-            piNode->value = M_PI;
+            piNode->value = $1*M_PI;
             piNode->left = NULL;
             piNode->right = NULL;
             $$ = (TreeNode*) piNode;
             }
 
-      | E { TreeNode* eNode = (TreeNode*)malloc(sizeof(struct node));
+      | Sinal E { TreeNode* eNode = (TreeNode*)malloc(sizeof(struct node));
             eNode->node_type = NUMBER;
-            eNode->value = M_E;
+            eNode->value = $1*M_E;
             eNode->left = NULL;
             eNode->right = NULL;
             $$ = (TreeNode*) eNode;
@@ -483,7 +483,7 @@ Exp_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeo
                                                 aux->value = 0;
                                                 
                                         }else if(hashTable.getType($2)== 0){
-                                                
+
                                         aux->value = $1*(*(static_cast<float*>(hashTable.search($2))));
 
                                         }else if(hashTable.getType($2)== 1){
@@ -550,12 +550,13 @@ Exp_Complemento: Sinal ValorIntOrFloat { TreeNode* aux = (TreeNode*)malloc(sizeo
 
 void yyerror(char *s) {
 	if(!erro_lexico){
-        if(strcmp(yytext, "\n") != 0){
-        printf("\nSYNTAX ERROR: [%s]", yytext);
-                erro = true;
-                return;
-        }else
-                printf("\nSYNTAX ERROR: Incomplete Command\n\n");
+                
+                if(strcmp(yytext, "\n") != 0){
+                printf("\nSYNTAX ERROR: [%s]", yytext);
+                        erro = true;
+                        return;
+                }else
+                        printf("\nSYNTAX ERROR: Incomplete Command\n\n");
         }else
                 erro_lexico = false;
 }

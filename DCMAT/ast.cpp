@@ -69,7 +69,7 @@ double RPN_Walk_calculatinge(TreeNode* aux, float x, HashTable hash){
                 break;
 
             case ABS_NODE:
-                aux->value = abs((int)aux->left->value);
+                aux->value = abs(aux->left->value);
                 valor += aux->value;
                 contador++;
                 break;
@@ -216,7 +216,7 @@ float RPN_Walk_somatorio(TreeNode* aux, std::string name, int i, HashTable hash)
             break;
 
             case ABS_NODE:
-                aux->value = abs((int)aux->left->value);
+                aux->value = abs(aux->left->value);
                 valor += aux->value;
                 contador++;
                 break;
@@ -312,7 +312,11 @@ void RPN_Walk_Errors_sum(TreeNode* aux,std::string name, HashTable hash){
                 }
                 }
                 break;
-        
+            case X_NODE:
+                printf("\nThe x variable cannot be present on expressions.");
+                not_existId = true;
+
+                break;
             default:
                 
                 break;
@@ -427,6 +431,11 @@ std::vector<std::vector<float>>* RPN_Walk_matriz(TreeNode* aux, HashTable hash){
                 }
              contador++;
                 break; 
+            case DI:
+                printf("\nIncorrect type for operator '/' - have MATRIX\n\n");
+                break_matriz = true;
+                contador++;
+                break;
             case SEN_NODE:
                 printf("\nIncorrect type for operator 'SEN' - have MATRIX\n\n");
                 break_matriz = true;

@@ -625,8 +625,8 @@ void putAxis(double minX, double maxX, double minY, double maxY, int resolutionX
     bool printx = false;
     double menory = abs(maxY);
     double menorx= abs(maxX);
-    int i_menory;
-    int j_menorx;
+    int i_menory = 0;
+    int j_menorx = 0;
 
     for (int i = resolutionY; i > 0 ; i--) {
         double y = minY + i * stepY;
