@@ -1,3 +1,4 @@
+#include <vector>
 #ifndef SCAN_HPP
 #define SCAN_HPP
 
@@ -10,11 +11,13 @@ struct Register
   std::string name;
   int begin;
   int end;
-  int intevalo;
+  int intervalo;
   int reg_alocado;
+  bool spill;
 };
 
 
+void LinearScan(int k, std::vector<Register> registers);
 
 
 #endif

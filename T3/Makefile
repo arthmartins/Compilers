@@ -1,7 +1,7 @@
 LEX=flex
 YY=bison
 CC=g++
-BIN = regalloc
+BIN = linearscan
 L_SOURCE = lexico.l
 Y_SOURCE = sintatico.y
 CFLAGS = -std=c++23 -g -I. -w
