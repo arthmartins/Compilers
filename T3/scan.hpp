@@ -16,8 +16,15 @@ struct Register
   bool spill;
 };
 
+struct historico
+{
+  int k;
+  std::vector<int> iteracoes;
+};
 
-void LinearScan(int k, std::vector<Register> registers);
+void LinearScan(int k, std::vector<Register*> registers, historico* hist);
+
+void resetAll(std::vector<Register*> registers);
 
 
 #endif
