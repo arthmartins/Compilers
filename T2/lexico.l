@@ -18,9 +18,6 @@
                             yylval.integer_value= atoi(yytext);
                             return NUM_INTEGER;
                         }
-
-[a-zA-Z]+[_0-9a-zA-Z]* { yylval.string_id = strdup(yytext);  str = strdup(yytext);  return IDENTIFIER; }
-
 \n                      { return EOL; }
 \r
 .                       {}

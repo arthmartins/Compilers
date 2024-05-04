@@ -91,6 +91,7 @@ Interferencias_aux: NUM_INTEGER ARROW {graph->num_reg_virtuais++; } Int_aux {
         
         for (auto it = graph->vertices[interf[i]]->interferencias.begin(); it != graph->vertices[interf[i]]->interferencias.end(); it++) {
             Vertice* v = it->second;
+
            if(v->id_vertice == interf[$1])
            {
             vertices_dif = false;
